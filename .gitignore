@@ -42,8 +42,6 @@ build/
 
 local.properties
 
-*.log
-
 captures/
 .externalNativeBuild/
 .cxx/
