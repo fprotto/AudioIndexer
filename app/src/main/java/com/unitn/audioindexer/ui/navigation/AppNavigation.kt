@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.unitn.audioindexer.ui.screen.home.FoldersScreen
-import com.unitn.audioindexer.ui.screen.home.HomeScreen
-import com.unitn.audioindexer.ui.screen.home.PlaylistDetailScreen
-import com.unitn.audioindexer.ui.screen.home.Screen
-import com.unitn.audioindexer.ui.screen.home.SongsScreen
+import com.unitn.audioindexer.ui.screens.home.FoldersScreen
+import com.unitn.audioindexer.ui.screens.home.HomeScreen
+import com.unitn.audioindexer.ui.screens.home.PlaylistDetailScreen
+import com.unitn.audioindexer.ui.screens.home.Screen
+import com.unitn.audioindexer.ui.screens.home.SongsScreen
 
 @Composable
 fun AppNavigation() {

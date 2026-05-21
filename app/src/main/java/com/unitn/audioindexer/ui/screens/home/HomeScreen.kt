@@ -1,4 +1,4 @@
-package com.unitn.audioindexer.ui.screen.home
+package com.unitn.audioindexer.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
@@ -39,9 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.sampleHomeState
-import com.unitn.audioindexer.ui.components.Playlist
-import com.unitn.audioindexer.ui.components.Song
-import com.unitn.audioindexer.ui.components.Source
+import com.unitn.audioindexer.data.components.Playlist
+import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.ui.screens.miniplayer.MiniPlayer
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -71,14 +70,10 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            item { QuickNavigateToSection(navController = navController) }
 
-            item { QuickAccessSection(navController) }
-
-            item { SectionTitle("Playlists") }
+            item { SectionTitle(stringResource(R.string.playlists_header)) }
             item { PlaylistSection(state.playlists, navController) }
-
-            item { SectionTitle("Sources") }
-            item { SourcesSection(state.sources) }
         }
     }
 }
@@ -100,13 +95,22 @@ fun HomeTopBar() {
 }
 
 @Composable
-fun QuickAccessSection(navController: NavController) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        QuickChip("Songs") {
-            navController.navigate("songs")
+fun QuickNavigateToSection(
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        QuickChip(stringResource(R.string.artists_header)) {
+            navController.navigate("artists")
         }
-        QuickChip("Folders") {
-            navController.navigate("folders")
+        QuickChip(stringResource(R.string.albums_header)) {
+            navController.navigate("albums")
+        }
+        QuickChip(stringResource(R.string.playlists_header)) {
+            navController.navigate("playlists")
         }
     }
 }
@@ -215,32 +219,6 @@ fun SourceCard(source: Source) {
                 if (source.connected) Icons.Default.Cloud else Icons.Default.CloudOff,
                 contentDescription = null
             )
-        }
-    }
-}
-
-@Composable
-fun MiniPlayer() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("No song playing")
-
-            Row {
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                }
-            }
         }
     }
 }

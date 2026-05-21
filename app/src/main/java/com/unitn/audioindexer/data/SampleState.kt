@@ -1,28 +1,93 @@
 package com.unitn.audioindexer.data
 
-import com.unitn.audioindexer.ui.components.HomeUiState
-import com.unitn.audioindexer.ui.components.Playlist
-import com.unitn.audioindexer.ui.components.Song
-import com.unitn.audioindexer.ui.components.Source
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.FeaturedPlayList
+import androidx.compose.material.icons.filled.PersonOutline
+import com.unitn.audioindexer.data.components.Album
+import com.unitn.audioindexer.data.components.AlbumUiState
+import com.unitn.audioindexer.data.components.Artist
+import com.unitn.audioindexer.data.components.ArtistUiState
+import com.unitn.audioindexer.data.components.IconSource
+import com.unitn.audioindexer.data.components.Playlist
+import com.unitn.audioindexer.data.components.PlaylistUiState
+import com.unitn.audioindexer.data.components.Song
 
-fun sampleHomeState() = HomeUiState(
-    recentSongs = listOf(
-        Song("Song A", "Artist 1"),
-        Song("Song B", "Artist 2"),
-        Song("Song C", "Artist 3")
-    ),
+fun sampleArtist() : Artist {
+    return Artist(
+        id = 1,
+        name = "Artist",
+        propic = IconSource.VectorIcon(Icons.Default.PersonOutline)
+    )
+}
+
+fun sampleSongs() : List<Song> {
+    val artist = sampleArtist()
+
+    return listOf(
+        Song(
+            id = 1,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 1,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 1,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 1,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 1,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        )
+    )
+}
+
+fun sampleArtistsState() = ArtistUiState(
+    artists = listOf(
+        sampleArtist(),
+        sampleArtist(),
+        sampleArtist(),
+        sampleArtist(),
+        sampleArtist(),
+    )
+)
+
+fun sampleAlbumsState() = AlbumUiState(
+    albums = listOf(
+        Album(
+            id = 1,
+            artist = sampleArtist(),
+            name = "Album 1",
+            cover = IconSource.VectorIcon(Icons.Default.Album),
+            releaseYear = 2012,
+            songs = sampleSongs()
+        )
+    )
+)
+
+fun samplePlaylistsState() = PlaylistUiState(
     playlists = listOf(
-        Playlist(1, "Favorites", 25),
-        Playlist(2, "Workout", 40),
-        Playlist(3, "Workout", 40),
-        Playlist(4, "Workout", 40),
-        Playlist(5, "Workout", 40),
-        Playlist(6, "Workout", 40),
-        Playlist(7, "Workout", 40),
-        Playlist(8, "Workout", 40)
-    ),
-    sources = listOf(
-        Source("Local", "120 songs", true),
-        Source("Remote Server", "Connected", true)
+        Playlist(
+            id = 1,
+            name = "Playlist 1",
+            cover = IconSource.VectorIcon(Icons.Default.FeaturedPlayList),
+            songs = sampleSongs()
+        )
     )
 )
