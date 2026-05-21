@@ -37,11 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.unitn.audioindexer.ui.screen.songs.Playlist
 import com.unitn.audioindexer.R
-import com.unitn.audioindexer.ui.screen.songs.Song
-import com.unitn.audioindexer.ui.screen.songs.Source
-import com.unitn.audioindexer.ui.screen.songs.sampleHomeState
+import com.unitn.audioindexer.data.sampleHomeState
+import com.unitn.audioindexer.ui.components.Playlist
+import com.unitn.audioindexer.ui.components.Song
+import com.unitn.audioindexer.ui.components.Source
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
