@@ -1,4 +1,4 @@
-package com.unitn.audioindexer.ui.screens.home
+package com.unitn.audioindexer.ui.screens.albums
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,26 +37,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
-import com.unitn.audioindexer.data.sampleHomeState
 import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.data.sampleArtistsState
+import com.unitn.audioindexer.data.samplePlaylistsState
 import com.unitn.audioindexer.ui.screens.miniplayer.MiniPlayer
-
-sealed class Screen(val route: String) {
-    object Home : Screen("home")
-    object Songs : Screen("songs")
-    object Folders : Screen("folders")
-    object PlaylistDetail : Screen("playlist_detail/{playlistId}") {
-        fun createRoute(id: Int) = "playlist_detail/$id"
-    }
-}
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val state = remember { sampleHomeState() }
+    val state = remember { samplePlaylistsState() }
 
     Scaffold(
         topBar = { HomeTopBar() },
@@ -124,15 +116,6 @@ fun QuickChip(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun RecentSongsSection(songs: List<Song>) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(songs) { song ->
-            SongCard(song)
-        }
-    }
-}
-
-@Composable
 fun SongCard(song: Song) {
     Card(
         modifier = Modifier
@@ -153,7 +136,7 @@ fun SongCard(song: Song) {
 
             Text(song.title, maxLines = 1)
             Text(
-                song.artist,
+                song.artist.name,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -183,42 +166,6 @@ fun PlaylistItem(playlist: Playlist, navController: NavController) {
     ) {
         Row(modifier = Modifier.padding(12.dp)) {
             Text(playlist.name)
-        }
-    }
-}
-
-@Composable
-fun SourcesSection(sources: List<Source>) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        sources.forEach { source ->
-            SourceCard(source)
-        }
-    }
-}
-
-@Composable
-fun SourceCard(source: Source) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(source.name)
-                Text(
-                    source.status,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            Icon(
-                if (source.connected) Icons.Default.Cloud else Icons.Default.CloudOff,
-                contentDescription = null
-            )
         }
     }
 }
