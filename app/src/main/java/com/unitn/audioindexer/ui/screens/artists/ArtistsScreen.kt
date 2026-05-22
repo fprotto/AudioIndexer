@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.Artist
 import com.unitn.audioindexer.data.sampleArtistsState
-import com.unitn.audioindexer.ui.MainScreen
+import com.unitn.audioindexer.ui.screens.MainScreen
 import kotlin.collections.forEach
 
 @Composable
