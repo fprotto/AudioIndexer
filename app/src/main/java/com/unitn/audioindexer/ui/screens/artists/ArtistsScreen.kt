@@ -70,7 +70,7 @@ fun ArtistItem(
 }
 
 @Composable
-fun ArtistDetailScreen(id: String?) {
+fun ArtistDetailScreen(id: Int?) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Artist ID: $id")
     }

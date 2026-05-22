@@ -69,7 +69,7 @@ fun AlbumItem(
 }
 
 @Composable
-fun AlbumDetailScreen(id: String?) {
+fun AlbumDetailScreen(id: Int?) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Album ID: $id")
     }

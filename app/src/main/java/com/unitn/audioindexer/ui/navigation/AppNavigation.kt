@@ -33,17 +33,17 @@ fun AppNavigation() {
         }
 
         composable(Screen.Album.route) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("albumId")
+            val id = backStackEntry.arguments?.getString("albumId")?.toInt()
             AlbumDetailScreen(id)
         }
 
         composable(Screen.Artist.route) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("artistId")
+            val id = backStackEntry.arguments?.getString("artistId")?.toInt()
             ArtistDetailScreen(id)
         }
 
         composable(Screen.Playlist.route) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("playlistId")
+            val id = backStackEntry.arguments?.getString("playlistId")?.toInt()
             PlaylistDetailScreen(id)
         }
     }
