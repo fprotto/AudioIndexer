@@ -62,7 +62,7 @@ fun PlaylistItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("playlist_detail/${playlist.id}")
+                navController.navigate("playlist/${playlist.id}")
             }
     ) {
         Row(modifier = Modifier.padding(12.dp)) {

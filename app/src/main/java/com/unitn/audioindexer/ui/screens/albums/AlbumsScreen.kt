@@ -36,19 +36,22 @@ fun AlbumsScreen(
         sampleState = "Albums"
     ) {
         AlbumsSection(
-            sampleAlbumsState().albums
+            sampleAlbumsState().albums,
+            navController
         )
     }
 }
 
 @Composable
 fun AlbumsSection(
-    albums: List<Album>
+    albums: List<Album>,
+    navController: NavController
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         albums.forEach { album ->
             AlbumItem(
-                album
+                album,
+                navController
             )
         }
     }
@@ -56,14 +59,25 @@ fun AlbumsSection(
 
 @Composable
 fun AlbumItem(
-    album: Album
+    album: Album,
+    navController: NavController
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable {
+                navController.navigate("album/${album.id}")
+            }
     ) {
         Row(modifier = Modifier.padding(12.dp)) {
             Text(album.name)
         }
+    }
+}
+
+@Composable
+fun AlbumDetailScreen(id: String?) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Album ID: $id")
     }
 }
