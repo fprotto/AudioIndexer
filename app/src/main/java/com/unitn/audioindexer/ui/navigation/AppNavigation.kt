@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.unitn.audioindexer.ui.screens.albums.FoldersScreen
-import com.unitn.audioindexer.ui.screens.albums.HomeScreen
-import com.unitn.audioindexer.ui.screens.albums.PlaylistDetailScreen
-import com.unitn.audioindexer.ui.screens.albums.Screen
-import com.unitn.audioindexer.ui.screens.albums.SongsScreen
+import com.unitn.audioindexer.ui.screens.Screen
+import com.unitn.audioindexer.ui.screens.albums.AlbumsScreen
+import com.unitn.audioindexer.ui.screens.artists.ArtistsScreen
+import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
+import com.unitn.audioindexer.ui.screens.playlists.PlaylistsScreen
 
 @Composable
 fun AppNavigation() {
@@ -16,22 +16,22 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Playlists.route
     ) {
 
-        composable(Screen.Home.route) {
-            HomeScreen(navController)
+        composable(Screen.Albums.route) {
+            AlbumsScreen(navController)
         }
 
-        composable(Screen.Songs.route) {
-            SongsScreen()
+        composable(Screen.Artists.route) {
+            ArtistsScreen(navController)
         }
 
-        composable(Screen.Folders.route) {
-            FoldersScreen()
+        composable(Screen.Playlists.route) {
+            PlaylistsScreen(navController)
         }
 
-        composable(Screen.PlaylistDetail.route) { backStackEntry ->
+        composable(Screen.Playlist.route) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("playlistId")
             PlaylistDetailScreen(id)
         }

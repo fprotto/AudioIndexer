@@ -4,7 +4,7 @@ sealed class Screen(val route: String) {
     object Albums : Screen("albums")
     object Artists : Screen("artists")
     object Playlists : Screen("playlists")
-    object PlaylistDetail : Screen("playlist_detail/{playlistId}") {
-        fun createRoute(id: Int) = "playlist_detail/$id"
+    object Playlist : Screen("playlist/{playlistId}") {
+        fun createRoute(id: Int) = "playlist/$id"
     }
 }
