@@ -1,8 +1,8 @@
 package com.unitn.audioindexer.data
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FeaturedPlayList
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.FeaturedPlayList
 import androidx.compose.material.icons.filled.PersonOutline
 import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.AlbumUiState
@@ -212,7 +212,7 @@ fun samplePlaylistsState() = PlaylistUiState(
         Playlist(
             id = 1,
             name = "Playlist 1",
-            cover = IconSource.VectorIcon(Icons.Default.FeaturedPlayList),
+            cover = IconSource.VectorIcon(Icons.AutoMirrored.Filled.FeaturedPlayList),
             songs = sampleSongs()
         )
     )

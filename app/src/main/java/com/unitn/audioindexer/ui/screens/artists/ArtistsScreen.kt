@@ -79,7 +79,8 @@ fun ArtistDetailScreen(
     id: Int?,
     modifier: Modifier = Modifier,
     state: ArtistUiState = sampleArtistsState(),
-    albumsState: AlbumUiState = sampleAlbumsState()
+    albumsState: AlbumUiState = sampleAlbumsState(),
+    onNavigateBack: () -> Unit = {}
 ) {
     val artist = state.artists.find {
         it.id == id

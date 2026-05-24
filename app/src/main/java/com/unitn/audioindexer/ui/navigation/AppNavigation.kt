@@ -38,12 +38,18 @@ fun AppNavigation(
 
         composable(Screen.Album.route) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("albumId")?.toInt()
-            AlbumDetailScreen(id)
+            AlbumDetailScreen(
+                id = id,
+                onNavigateBack = navController::popBackStack
+            )
         }
 
         composable(Screen.Artist.route) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("artistId")?.toInt()
-            ArtistDetailScreen(id)
+            ArtistDetailScreen(
+                id = id,
+                onNavigateBack = navController::popBackStack
+            )
         }
 
         composable(Screen.Playlist.route) { backStackEntry ->
