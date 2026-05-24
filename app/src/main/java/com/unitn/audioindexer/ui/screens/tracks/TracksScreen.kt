@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.DropdownMenu
@@ -28,7 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.unitn.audioindexer.R
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.sampleSongs
@@ -75,6 +78,7 @@ fun TracksScreen(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
                 onShuffleClick = { isShuffled = !isShuffled },
+                sortOrder = sortOrder,
                 onSortOrderChange = { sortOrder = it }
             )
             
@@ -90,6 +94,7 @@ fun TracksControlBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onShuffleClick: () -> Unit,
+    sortOrder: SongSortOrder,
     onSortOrderChange: (SongSortOrder) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -105,7 +110,7 @@ fun TracksControlBar(
             modifier = Modifier
                 .weight(1f)
                 .height(48.dp),
-            placeholder = { Text("Search songs...", style = MaterialTheme.typography.bodyMedium) },
+            placeholder = { Text(stringResource(R.string.search_songs), style = MaterialTheme.typography.bodyMedium) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
             singleLine = true,
             shape = RoundedCornerShape(24.dp),
@@ -133,16 +138,31 @@ fun TracksControlBar(
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Title") },
-                    onClick = { onSortOrderChange(SongSortOrder.TITLE); expanded = false }
+                    text = { Text(stringResource(R.string.title)) },
+                    onClick = { onSortOrderChange(SongSortOrder.TITLE); expanded = false },
+                    trailingIcon = {
+                        if (sortOrder == SongSortOrder.TITLE) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 )
                 DropdownMenuItem(
-                    text = { Text("Artist") },
-                    onClick = { onSortOrderChange(SongSortOrder.ARTIST); expanded = false }
+                    text = { Text(stringResource(R.string.artist)) },
+                    onClick = { onSortOrderChange(SongSortOrder.ARTIST); expanded = false },
+                    trailingIcon = {
+                        if (sortOrder == SongSortOrder.ARTIST) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 )
                 DropdownMenuItem(
-                    text = { Text("Release Year") },
-                    onClick = { onSortOrderChange(SongSortOrder.YEAR); expanded = false }
+                    text = { Text(stringResource(R.string.release_year)) },
+                    onClick = { onSortOrderChange(SongSortOrder.YEAR); expanded = false },
+                    trailingIcon = {
+                        if (sortOrder == SongSortOrder.YEAR) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 )
             }
         }

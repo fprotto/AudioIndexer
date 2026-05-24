@@ -5,4 +5,8 @@
     <string name="artists_header">Artists</string>
     <string name="albums_header">Albums</string>
     <string name="no_song_playing">No song playing</string>
+    <string name="title">Title</string>
+    <string name="artist">Artist</string>
+    <string name="release_year">Release year</string>
+    <string name="search_songs">Search songs…</string>
 </resources>
