@@ -11,4 +11,5 @@
     <string name="search_songs">Search songs…</string>
     <string name="search_playlists">Search playlists…</string>
     <string name="search_albums">Search albums…</string>
+    <string name="search_artists">Search artists…</string>
 </resources>

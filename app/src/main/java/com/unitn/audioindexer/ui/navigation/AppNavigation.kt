@@ -53,6 +53,7 @@ fun AppNavigation(
             val id = backStackEntry.arguments?.getString("artistId")?.toInt()
             ArtistDetailScreen(
                 id = id,
+                navController = navController,
                 onNavigateBack = navController::popBackStack
             )
         }
