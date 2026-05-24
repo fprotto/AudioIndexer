@@ -2,12 +2,12 @@ package com.unitn.audioindexer.ui.screens.playlists
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.IconSource
@@ -38,7 +39,7 @@ import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.PlaylistUiState
 import com.unitn.audioindexer.data.samplePlaylistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
-import com.unitn.audioindexer.ui.screens.SectionHeader
+import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.songs.SongCard
 import kotlin.collections.forEach
 
@@ -65,13 +66,30 @@ fun PlaylistSection(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        playlists.forEach { playlist ->
-            PlaylistItem(
-                playlist,
-                navController = navController,
-                modifier = modifier
-            )
+    // We avoid using LazyVerticalGrid here because it is nested inside another LazyColumn
+    // in MainScreen, which would cause an IllegalStateException due to infinite height constraints.
+    // Instead, we manually create a grid using Column and Row.
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        playlists.chunked(2).forEach { rowPlaylists ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                rowPlaylists.forEach { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        onClick = { navController.navigate(Screen.Playlist.createRoute(playlist.id)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // Add an empty spacer if the row is not full to maintain grid alignment
+                if (rowPlaylists.size < 2) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }
@@ -79,18 +97,58 @@ fun PlaylistSection(
 @Composable
 fun PlaylistItem(
     playlist: Playlist,
-    navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                navController.navigate("playlist/${playlist.id}")
-            }
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium
     ) {
-        Row(modifier = Modifier.padding(12.dp)) {
-            Text(playlist.name)
+        Column {
+            // Cover
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                when (val cover = playlist.cover) {
+                    is IconSource.VectorIcon -> Icon(
+                        imageVector = cover.imageVector,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(56.dp)
+                    )
+                    is IconSource.BitmapIcon -> Image(
+                        bitmap = cover.bitmap,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+
+            // Name and song count
+            Column(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = playlist.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                val songCount = playlist.songs.size
+                Text(
+                    text = "$songCount ${if (songCount == 1) "song" else "songs"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

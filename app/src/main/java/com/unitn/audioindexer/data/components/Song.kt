@@ -4,5 +4,6 @@ data class Song(
     val id: Int,
     val title: String,
     val artist: Artist,
-    val releaseYear: Int
+    val releaseYear: Int,
+    val playCount: Int = 0
 )
