@@ -1,15 +1,16 @@
 package com.unitn.audioindexer.ui.screens
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
@@ -19,11 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,18 +39,27 @@ fun MainScreen(
     content: @Composable () -> Unit
 ) {
     Scaffold(
+        modifier = modifier,
         topBar = { TopBar() },
         bottomBar = { MiniPlayer() }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { QuickNavigateToSection(navController = navController, currentSection = sampleState) }
-            item { content() }
+            item { 
+                QuickNavigateToSection(
+                    navController = navController, 
+                    currentSection = sampleState
+                ) 
+            }
+            item {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    content()
+                }
+            }
         }
     }
 }
@@ -74,8 +82,9 @@ fun MiniPlayer() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+            .height(64.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Row(
             modifier = Modifier
@@ -102,28 +111,35 @@ fun QuickNavigateToSection(
     modifier: Modifier = Modifier
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         NavigationTab(
             label = stringResource(R.string.tracks_header),
             isSelected = currentSection == "Tracks",
-            onClick = { navController.navigate("tracks") }
+            onClick = { navController.navigate("tracks") },
+            modifier = Modifier.weight(1f)
         )
         NavigationTab(
             label = stringResource(R.string.artists_header),
             isSelected = currentSection == "Artists",
-            onClick = { navController.navigate("artists") }
+            onClick = { navController.navigate("artists") },
+            modifier = Modifier.weight(1f)
         )
         NavigationTab(
             label = stringResource(R.string.albums_header),
             isSelected = currentSection == "Albums",
-            onClick = { navController.navigate("albums") }
+            onClick = { navController.navigate("albums") },
+            modifier = Modifier.weight(1f)
         )
         NavigationTab(
             label = stringResource(R.string.playlists_header),
             isSelected = currentSection == "Playlists",
-            onClick = { navController.navigate("playlists") }
+            onClick = { navController.navigate("playlists") },
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -132,33 +148,31 @@ fun QuickNavigateToSection(
 fun NavigationTab(
     label: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val containerColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        label = "containerColor"
-    )
-    val contentColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "contentColor"
-    )
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
 
-    Surface(
-        onClick = onClick,
-        color = containerColor,
-        contentColor = contentColor,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.height(40.dp)
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                )
+        Text(
+            text = label,
+            color = contentColor,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            style = MaterialTheme.typography.labelMedium
+        )
+
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(contentColor)
             )
         }
     }
