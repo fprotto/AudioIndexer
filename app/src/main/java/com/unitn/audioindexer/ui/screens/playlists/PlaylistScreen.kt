@@ -20,9 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,7 +54,6 @@ import com.unitn.audioindexer.data.samplePlaylistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.songs.SongCard
-import kotlin.collections.forEach
 
 @Composable
 fun PlaylistsScreen(
@@ -83,7 +80,7 @@ fun PlaylistsScreen(
             )
 
             PlaylistSection(
-                samplePlaylistsState().playlists,
+                filteredPlaylists,
                 navController = navController,
                 modifier = modifier
             )
