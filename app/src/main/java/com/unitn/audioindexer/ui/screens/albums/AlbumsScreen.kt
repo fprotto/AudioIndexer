@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.Album
+import com.unitn.audioindexer.data.components.AlbumUiState
 import com.unitn.audioindexer.data.sampleAlbumsState
 import com.unitn.audioindexer.ui.screens.MainScreen
+import com.unitn.audioindexer.ui.songs.SongCard
 
 @Composable
 fun AlbumsScreen(
@@ -30,7 +33,8 @@ fun AlbumsScreen(
     ) {
         AlbumsSection(
             sampleAlbumsState().albums,
-            navController
+            navController,
+            modifier = modifier
         )
     }
 }
@@ -38,13 +42,15 @@ fun AlbumsScreen(
 @Composable
 fun AlbumsSection(
     albums: List<Album>,
-    navController: NavController
+    navController: NavController,
+    modifier: Modifier = Modifier
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         albums.forEach { album ->
             AlbumItem(
                 album,
-                navController
+                navController,
+                modifier = modifier
             )
         }
     }
@@ -53,7 +59,8 @@ fun AlbumsSection(
 @Composable
 fun AlbumItem(
     album: Album,
-    navController: NavController
+    navController: NavController,
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = Modifier
@@ -69,8 +76,18 @@ fun AlbumItem(
 }
 
 @Composable
-fun AlbumDetailScreen(id: Int?) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Album ID: $id")
+fun AlbumDetailScreen(
+    id: Int?,
+    modifier: Modifier = Modifier,
+    state: AlbumUiState = sampleAlbumsState()
+) {
+    val album = state.albums.find {
+        it.id == id
+    } ?: return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        album.songs.forEach { song ->
+            SongCard(song)
+        }
     }
 }

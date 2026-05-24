@@ -52,7 +52,7 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { QuickNavigateToSection(navController = navController, currentSection = sampleState) }
-            item { SectionTitle(sampleState) }
+            item { SectionHeader(sampleState) }
             item { content() }
         }
     }
@@ -165,7 +165,7 @@ fun NavigationTab(
 }
 
 @Composable
-fun SectionTitle(title: String) {
+fun SectionHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium

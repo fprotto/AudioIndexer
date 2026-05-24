@@ -32,25 +32,151 @@ fun sampleSongs() : List<Song> {
             releaseYear = 2023
         ),
         Song(
-            id = 1,
+            id = 2,
             title = "Title",
             artist = artist,
             releaseYear = 2023
         ),
         Song(
-            id = 1,
+            id = 3,
             title = "Title",
             artist = artist,
             releaseYear = 2023
         ),
         Song(
-            id = 1,
+            id = 4,
             title = "Title",
             artist = artist,
             releaseYear = 2023
         ),
         Song(
-            id = 1,
+            id = 5,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 6,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
+            title = "Title",
+            artist = artist,
+            releaseYear = 2023
+        ),
+        Song(
+            id = 7,
             title = "Title",
             artist = artist,
             releaseYear = 2023

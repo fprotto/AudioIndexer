@@ -1,6 +1,7 @@
 package com.unitn.audioindexer.ui.songs
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,24 +36,29 @@ fun SongCard(
     song: Song,
     onClick: () -> Unit = {}
 ) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ListItem(
+        headlineContent = {
+            Text(
+                text = song.title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        supportingContent = {
+            Text(
+                text = song.artist.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        leadingContent = {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(40.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -60,33 +67,11 @@ fun SongCard(
                     imageVector = Icons.Default.MusicNote,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = song.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = song.artist.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
+        },
+        trailingContent = {
             IconButton(onClick = { /* TODO: implement song menu */ }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
@@ -94,6 +79,7 @@ fun SongCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-    }
+        },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
 }

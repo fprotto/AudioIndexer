@@ -1,6 +1,7 @@
 package com.unitn.audioindexer.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -13,12 +14,15 @@ import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistsScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Playlists.route
+        startDestination = Screen.Playlists.route,
+        modifier = modifier
     ) {
         composable(Screen.Albums.route) {
             AlbumsScreen(navController)
@@ -44,7 +48,10 @@ fun AppNavigation() {
 
         composable(Screen.Playlist.route) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("playlistId")?.toInt()
-            PlaylistDetailScreen(id)
+            PlaylistDetailScreen(
+                id = id,
+                onNavigateBack = navController::popBackStack
+            )
         }
     }
 }
