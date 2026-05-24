@@ -12,6 +12,7 @@ import com.unitn.audioindexer.ui.screens.artists.ArtistDetailScreen
 import com.unitn.audioindexer.ui.screens.artists.ArtistsScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistsScreen
+import com.unitn.audioindexer.ui.screens.tracks.TracksScreen
 
 @Composable
 fun AppNavigation(
@@ -21,9 +22,13 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Playlists.route,
+        startDestination = Screen.Tracks.route,
         modifier = modifier
     ) {
+        composable(Screen.Tracks.route) {
+            TracksScreen(navController)
+        }
+
         composable(Screen.Albums.route) {
             AlbumsScreen(navController)
         }

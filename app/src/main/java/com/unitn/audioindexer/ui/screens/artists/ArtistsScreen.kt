@@ -20,6 +20,7 @@ import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.sampleAlbumsState
 import com.unitn.audioindexer.data.sampleArtistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
+import com.unitn.audioindexer.ui.screens.playlists.PlaylistItem
 
 @Composable
 fun ArtistsScreen(
@@ -106,7 +107,7 @@ fun ArtistDetailScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                //PlaylistDetailContent(playlist)
+                PlaylistItem(playlist)
             }
         }
     }

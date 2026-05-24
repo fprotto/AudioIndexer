@@ -66,9 +66,6 @@ fun PlaylistSection(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    // We avoid using LazyVerticalGrid here because it is nested inside another LazyColumn
-    // in MainScreen, which would cause an IllegalStateException due to infinite height constraints.
-    // Instead, we manually create a grid using Column and Row.
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier

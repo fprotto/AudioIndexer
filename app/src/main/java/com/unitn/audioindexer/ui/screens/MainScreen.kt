@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import com.unitn.audioindexer.R
 
 @Composable
@@ -52,7 +53,6 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { QuickNavigateToSection(navController = navController, currentSection = sampleState) }
-            item { SectionHeader(sampleState) }
             item { content() }
         }
     }
@@ -64,10 +64,7 @@ fun TopBar() {
     TopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
         actions = {
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
-            }
-            IconButton(onClick = {}) {
+            IconButton(onClick = { /* TODO: implement settings */}) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
         }
@@ -110,6 +107,11 @@ fun QuickNavigateToSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         modifier = modifier.fillMaxWidth()
     ) {
+        NavigationTab(
+            label = stringResource(R.string.tracks_header),
+            isSelected = currentSection == "Tracks",
+            onClick = { navController.navigate("tracks") }
+        )
         NavigationTab(
             label = stringResource(R.string.artists_header),
             isSelected = currentSection == "Artists",
@@ -156,18 +158,10 @@ fun NavigationTab(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelLarge.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 )
             )
         }
     }
-}
-
-@Composable
-fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium
-    )
 }
