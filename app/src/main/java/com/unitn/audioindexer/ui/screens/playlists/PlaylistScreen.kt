@@ -10,13 +10,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -24,16 +30,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.PlaylistUiState
@@ -48,15 +63,80 @@ fun PlaylistsScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val allPlaylists = remember { samplePlaylistsState().playlists }
+
+    val filteredPlaylists = remember(searchQuery, allPlaylists) {
+        allPlaylists.filter {
+            it.name.contains(searchQuery, ignoreCase = true)
+        }
+    }
+
     MainScreen(
         navController = navController,
         sampleState = "Playlists"
     ) {
-        PlaylistSection(
-            samplePlaylistsState().playlists,
-            navController = navController,
-            modifier = modifier
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            PlaylistsControlBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it }
+            )
+
+            PlaylistSection(
+                samplePlaylistsState().playlists,
+                navController = navController,
+                modifier = modifier
+            )
+        }
+
+    }
+}
+
+@Composable
+fun PlaylistsControlBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        TextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp),
+            placeholder = {
+                Text(
+                    stringResource(R.string.search_playlists),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(24.dp),
+            textStyle = MaterialTheme.typography.bodyMedium,
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
         )
+
+        IconButton(onClick = { /* TODO: implement playlist creation */ }, modifier = Modifier.size(40.dp)) {
+            Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = "New playlist", modifier = Modifier.size(20.dp))
+        }
     }
 }
 
