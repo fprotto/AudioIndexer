@@ -21,4 +21,22 @@
     <string name="menu_properties">Properties</string>
     <string name="menu_delete">Delete</string>
     <string name="more_options">More options</string>
+    <string name="settings">Settings</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="sort">Sort</string>
+    <string name="new_playlist">New playlist</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="minimize">Minimize</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="shuffle_play">Shuffle play</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="repeat">Repeat</string>
+    <string name="search">Search</string>
+    <string name="favorite_songs">Favorites</string>
+    <plurals name="songs_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
 </resources>

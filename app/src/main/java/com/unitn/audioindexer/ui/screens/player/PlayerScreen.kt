@@ -79,7 +79,10 @@ fun PlayerScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Minimize")
+                Icon(
+                    Icons.Default.KeyboardArrowDown,
+                    contentDescription = stringResource(R.string.minimize)
+                )
             }
             Text(
                 text = stringResource(R.string.now_playing_uppercase),
@@ -89,7 +92,10 @@ fun PlayerScreen(
             )
             Box {
                 IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.more_options)
+                    )
                 }
                 DropdownMenu(
                     expanded = showMenu,
@@ -98,7 +104,10 @@ fun PlayerScreen(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.menu_add_to_playlist)) },
                         leadingIcon = {
-                            Icon(Icons.Default.PlaylistAddCircle, contentDescription = null)
+                            Icon(
+                                Icons.Default.PlaylistAddCircle,
+                                contentDescription = stringResource(R.string.menu_add_to_playlist)
+                            )
                         },
                         onClick = {
                             showMenu = false
@@ -108,7 +117,10 @@ fun PlayerScreen(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.menu_properties)) },
                         leadingIcon = {
-                            Icon(Icons.Default.Info, contentDescription = null)
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = stringResource(R.string.menu_properties)
+                            )
                         },
                         onClick = {
                             showMenu = false
@@ -207,13 +219,16 @@ fun PlayerScreen(
                     contentColor = if (uiState.isShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             ) {
-                Icon(Icons.Default.Shuffle, contentDescription = "Shuffle")
+                Icon(
+                    Icons.Default.Shuffle,
+                    contentDescription = stringResource(R.string.shuffle)
+                )
             }
 
             IconButton(onClick = viewModel::skipPrevious, modifier = Modifier.size(48.dp)) {
                 Icon(
                     Icons.Default.SkipPrevious,
-                    contentDescription = "Previous",
+                    contentDescription = stringResource(R.string.previous),
                     modifier = Modifier.size(36.dp)
                 )
             }
@@ -225,7 +240,7 @@ fun PlayerScreen(
             ) {
                 Icon(
                     if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (uiState.isPlaying) "Pause" else "Play",
+                    contentDescription = if (uiState.isPlaying) stringResource(R.string.pause) else stringResource(R.string.play),
                     modifier = Modifier.size(40.dp)
                 )
             }
@@ -233,7 +248,7 @@ fun PlayerScreen(
             IconButton(onClick = viewModel::skipNext, modifier = Modifier.size(48.dp)) {
                 Icon(
                     Icons.Default.SkipNext,
-                    contentDescription = "Next",
+                    contentDescription = stringResource(R.string.next),
                     modifier = Modifier.size(36.dp)
                 )
             }
@@ -249,7 +264,7 @@ fun PlayerScreen(
                         Player.REPEAT_MODE_ONE -> Icons.Default.RepeatOne
                         else -> Icons.Default.Repeat
                     },
-                    contentDescription = "Repeat"
+                    contentDescription = stringResource(R.string.repeat)
                 )
             }
         }

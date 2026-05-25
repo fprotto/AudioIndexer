@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -125,7 +126,7 @@ fun PlaylistsControlBar(
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.search),
                     modifier = Modifier.size(20.dp)
                 )
             },
@@ -143,7 +144,11 @@ fun PlaylistsControlBar(
         )
 
         IconButton(onClick = { /* TODO: implement playlist creation */ }, modifier = Modifier.size(40.dp)) {
-            Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = "New playlist", modifier = Modifier.size(20.dp))
+            Icon(
+                Icons.AutoMirrored.Filled.PlaylistAdd,
+                contentDescription = stringResource(R.string.new_playlist),
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -231,7 +236,11 @@ fun PlaylistItem(
 
                 val songCount = playlist.songs.size
                 Text(
-                    text = "$songCount ${if (songCount == 1) "song" else "songs"}",
+                    text = LocalResources.current.getQuantityString(
+                        R.plurals.songs_count,
+                        songCount,
+                        songCount
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -282,7 +291,7 @@ fun PlaylistDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.navigate_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -330,7 +339,11 @@ fun PlaylistDetailScreen(
                         // Metadata row: song count · artist count
                         Text(
                             text = buildString {
-                                append("$songCount ${if (songCount == 1) "song" else "songs"}")
+                                append(LocalResources.current.getQuantityString(
+                                    R.plurals.songs_count,
+                                    songCount,
+                                    songCount
+                                ))
                                 //append("  ·  ")
                                 //append("$artistCount ${if (artistCount == 1) "artist" else "artists"}")
                             },
@@ -359,7 +372,7 @@ fun PlaylistDetailScreen(
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
                                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                                Text("Play")
+                                Text(stringResource(R.string.play))
                             }
 
                             // Shuffle button
@@ -369,11 +382,11 @@ fun PlaylistDetailScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Shuffle,
-                                    contentDescription = "Shuffle",
+                                    contentDescription = stringResource(R.string.shuffle_play),
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
                                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                                Text("Shuffle play")
+                                Text(stringResource(R.string.shuffle_play))
                             }
 
                             // More options
@@ -381,7 +394,7 @@ fun PlaylistDetailScreen(
                                 IconButton(onClick = { showMenu = true }) {
                                     Icon(
                                         imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "More options"
+                                        contentDescription = stringResource(R.string.more_options)
                                     )
                                 }
                                 DropdownMenu(

@@ -83,7 +83,7 @@ fun TopBar() {
         },
         actions = {
             IconButton(onClick = { /* TODO: implement settings */ }) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings")
+                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
             }
         }
     )

@@ -110,8 +110,19 @@ fun TracksControlBar(
             modifier = Modifier
                 .weight(1f)
                 .height(48.dp),
-            placeholder = { Text(stringResource(R.string.search_songs), style = MaterialTheme.typography.bodyMedium) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
+            placeholder = {
+                Text(
+                    stringResource(R.string.search_songs),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            },
             singleLine = true,
             shape = RoundedCornerShape(24.dp),
             textStyle = MaterialTheme.typography.bodyMedium,
@@ -126,12 +137,20 @@ fun TracksControlBar(
         )
 
         IconButton(onClick = onShuffleClick, modifier = Modifier.size(40.dp)) {
-            Icon(Icons.Default.Shuffle, contentDescription = "Shuffle", modifier = Modifier.size(20.dp))
+            Icon(
+                Icons.Default.Shuffle,
+                contentDescription = stringResource(R.string.shuffle),
+                modifier = Modifier.size(20.dp)
+            )
         }
 
         Box {
             IconButton(onClick = { expanded = true }, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort", modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.AutoMirrored.Filled.Sort,
+                    contentDescription = stringResource(R.string.sort),
+                    modifier = Modifier.size(20.dp)
+                )
             }
             DropdownMenu(
                 expanded = expanded,
@@ -142,7 +161,11 @@ fun TracksControlBar(
                     onClick = { onSortOrderChange(SongSortOrder.TITLE); expanded = false },
                     trailingIcon = {
                         if (sortOrder == SongSortOrder.TITLE) {
-                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 )
@@ -151,7 +174,11 @@ fun TracksControlBar(
                     onClick = { onSortOrderChange(SongSortOrder.ARTIST); expanded = false },
                     trailingIcon = {
                         if (sortOrder == SongSortOrder.ARTIST) {
-                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 )
@@ -160,7 +187,11 @@ fun TracksControlBar(
                     onClick = { onSortOrderChange(SongSortOrder.YEAR); expanded = false },
                     trailingIcon = {
                         if (sortOrder == SongSortOrder.YEAR) {
-                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 )

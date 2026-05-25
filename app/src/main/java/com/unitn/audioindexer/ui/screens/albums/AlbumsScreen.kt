@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -123,7 +124,7 @@ fun AlbumsControlBar(
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.search),
                     modifier = Modifier.size(20.dp)
                 )
             },
@@ -170,7 +171,7 @@ fun AlbumItem(
 
     if (showAsCard) {
         Card(
-            onClick = { navController.navigate("album/${album.id}") },
+            onClick = { navController.navigate(Screen.Album.createRoute(album.id)) },
             modifier = modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.medium
         ) {
@@ -274,7 +275,7 @@ fun AlbumItem(
                     onMoreOptionsClick = { showMenu = true }
                 )
             },
-            modifier = Modifier.clickable(onClick = { navController.navigate("album/${album.id}") })
+            modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Album.createRoute(album.id)) })
         )
     }
 }
@@ -370,7 +371,7 @@ fun AlbumDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.navigate_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -427,7 +428,11 @@ fun AlbumDetailScreen(
                         // Metadata row: song count · release year
                         Text(
                             text = buildString {
-                                append("$songCount ${if (songCount == 1) "song" else "songs"}")
+                                append(LocalResources.current.getQuantityString(
+                                    R.plurals.songs_count,
+                                    songCount,
+                                    songCount
+                                ))
                                 append("  ·  ")
                                 append("${album.releaseYear}")
                             },
@@ -449,11 +454,11 @@ fun AlbumDetailScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.play),
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
                                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                                Text("Play")
+                                Text(stringResource(R.string.play))
                             }
 
                             var showMenu by remember { mutableStateOf(false) }

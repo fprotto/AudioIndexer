@@ -120,7 +120,7 @@ fun ArtistsControlBar(
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.search),
                     modifier = Modifier.size(20.dp)
                 )
             },
@@ -197,7 +197,7 @@ fun ArtistItem(
                 onMoreOptionsClick = { showMenu = true }
             )
         },
-        modifier = Modifier.clickable(onClick = { navController.navigate("artist/${artist.id}") })
+        modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Artist.createRoute(artist.id)) })
     )
 }
 
@@ -249,7 +249,7 @@ fun ArtistDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.navigate_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -266,7 +266,7 @@ fun ArtistDetailScreen(
             if (topSongs.isNotEmpty()) {
                 item {
                     Text(
-                        text = "Popular",
+                        text = stringResource(R.string.favorite_songs),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
@@ -283,7 +283,7 @@ fun ArtistDetailScreen(
             if (artistAlbums.isNotEmpty()) {
                 item {
                     Text(
-                        text = "Albums",
+                        text = stringResource(R.string.albums_header),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
@@ -325,8 +325,6 @@ fun ArtistHeader(
     artist: Artist,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
