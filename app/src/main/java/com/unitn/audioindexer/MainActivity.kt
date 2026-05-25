@@ -5,10 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.unitn.audioindexer.ui.navigation.AppNavigation
 import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
@@ -19,9 +16,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AudioIndexerTheme {
-                Scaffold { innerPadding ->
-                    AppNavigation(modifier = Modifier.padding(innerPadding))
-                }
+                AppNavigation()
             }
         }
     }
@@ -31,9 +26,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun HomeScreenPreview() {
         AudioIndexerTheme {
-            Scaffold { innerPadding ->
-                AppNavigation(modifier = Modifier.padding(innerPadding))
-            }
+            AppNavigation()
         }
     }
 }
