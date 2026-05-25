@@ -19,13 +19,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddToQueue
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -162,6 +166,8 @@ fun AlbumItem(
     modifier: Modifier = Modifier,
     showAsCard: Boolean = false
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     if (showAsCard) {
         Card(
             onClick = { navController.navigate("album/${album.id}") },
@@ -192,23 +198,35 @@ fun AlbumItem(
                     }
                 }
 
-                Column(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = album.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = album.artist.name,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = album.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = album.artist.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    AlbumMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        onMoreOptionsClick = { showMenu = true }
                     )
                 }
             }
@@ -250,16 +268,64 @@ fun AlbumItem(
                 }
             },
             trailingContent = {
-                IconButton(onClick = { /* TODO: implement album menu */ }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "More options",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                AlbumMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    onMoreOptionsClick = { showMenu = true }
+                )
             },
             modifier = Modifier.clickable(onClick = { navController.navigate("album/${album.id}") })
         )
+    }
+}
+
+@Composable
+private fun AlbumMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onMoreOptionsClick: () -> Unit
+) {
+    Box {
+        IconButton(onClick = onMoreOptionsClick) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.more_options),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest
+        ) {
+            DropdownMenuItem(
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.AddToQueue,
+                        contentDescription = stringResource(R.string.menu_add_to_queue),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                text = { Text(stringResource(R.string.menu_add_to_queue)) },
+                onClick = {
+                    onDismissRequest()
+                    // TODO: implement add to queue
+                }
+            )
+            DropdownMenuItem(
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.PlaylistAddCircle,
+                        contentDescription = stringResource(R.string.menu_add_to_playlist),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                onClick = {
+                    onDismissRequest()
+                    // TODO: implement add to playlist
+                }
+            )
+        }
     }
 }
 
@@ -369,20 +435,33 @@ fun AlbumDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        // Play button
-                        Button(
-                            onClick = { /* TODO: play album */ },
+                        // Play button + Menu
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 32.dp)
+                                .padding(horizontal = 32.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            Button(
+                                onClick = { /* TODO: play album */ },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                )
+                                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                                Text("Play")
+                            }
+
+                            var showMenu by remember { mutableStateOf(false) }
+                            AlbumMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                                onMoreOptionsClick = { showMenu = true }
                             )
-                            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                            Text("Play")
                         }
                     }
                 }

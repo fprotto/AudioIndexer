@@ -5,20 +5,33 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddToQueue
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlaylistAddCircle
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.Song
 
 @Composable
@@ -26,6 +39,8 @@ fun SongCard(
     song: Song,
     onClick: () -> Unit = {}
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     ListItem(
         headlineContent = {
             Text(
@@ -62,12 +77,89 @@ fun SongCard(
             }
         },
         trailingContent = {
-            IconButton(onClick = { /* TODO: implement song menu */ }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More options",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.more_options),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AddToQueue,
+                                contentDescription = stringResource(R.string.menu_add_to_queue),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        text = { Text(stringResource(R.string.menu_add_to_queue)) },
+                        onClick = {
+                            showMenu = false
+                            // TODO: implement add to queue
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.PlaylistAddCircle,
+                                contentDescription = stringResource(R.string.menu_add_to_playlist),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                        onClick = {
+                            showMenu = false
+                            // TODO: implement add to playlist
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.DriveFileRenameOutline,
+                                contentDescription = stringResource(R.string.menu_rename),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        text = { Text(stringResource(R.string.menu_rename)) },
+                        onClick = {
+                            showMenu = false
+                            // TODO: implement rename
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(R.string.menu_properties),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        text = { Text(stringResource(R.string.menu_properties)) },
+                        onClick = {
+                            showMenu = false
+                            // TODO: implement properties
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.menu_delete),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        text = { Text(stringResource(R.string.menu_delete)) },
+                        onClick = {
+                            showMenu = false
+                            // TODO: implement delete
+                        }
+                    )
+                }
             }
         },
         modifier = Modifier.clickable(onClick = onClick)

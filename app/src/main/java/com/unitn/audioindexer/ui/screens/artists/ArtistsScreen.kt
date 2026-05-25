@@ -18,9 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddToQueue
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -158,6 +162,8 @@ fun ArtistItem(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     ListItem(
         headlineContent = {
             Text(
@@ -185,13 +191,11 @@ fun ArtistItem(
             }
         },
         trailingContent = {
-            IconButton(onClick = { /* TODO: implement artist menu */ }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More options",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ArtistMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+                onMoreOptionsClick = { showMenu = true }
+            )
         },
         modifier = Modifier.clickable(onClick = { navController.navigate("artist/${artist.id}") })
     )
@@ -321,6 +325,8 @@ fun ArtistHeader(
     artist: Artist,
     modifier: Modifier = Modifier
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -351,7 +357,58 @@ fun ArtistHeader(
         Text(
             text = artist.name,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
         )
+    }
+}
+
+@Composable
+private fun ArtistMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onMoreOptionsClick: () -> Unit
+) {
+    Box {
+        IconButton(onClick = onMoreOptionsClick) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.more_options),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest
+        ) {
+            DropdownMenuItem(
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.AddToQueue,
+                        contentDescription = stringResource(R.string.menu_add_to_queue),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                text = { Text(stringResource(R.string.menu_add_to_queue)) },
+                onClick = {
+                    onDismissRequest()
+                    // TODO: implement add to queue
+                }
+            )
+            DropdownMenuItem(
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.PlaylistAddCircle,
+                        contentDescription = stringResource(R.string.menu_add_to_playlist),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                onClick = {
+                    onDismissRequest()
+                    // TODO: implement add to playlist
+                }
+            )
+        }
     }
 }

@@ -19,11 +19,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.AddToQueue
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -161,6 +170,7 @@ fun PlaylistSection(
                         modifier = Modifier.weight(1f)
                     )
                 }
+
                 // Add an empty spacer if the row is not full to maintain grid alignment
                 if (rowPlaylists.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
@@ -218,6 +228,7 @@ fun PlaylistItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 val songCount = playlist.songs.size
                 Text(
                     text = "$songCount ${if (songCount == 1) "song" else "songs"}",
@@ -327,20 +338,102 @@ fun PlaylistDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        // Play button
-                        Button(
-                            onClick = { /* TODO: play playlist */ },
+                        // Action buttons row
+                        var showMenu by remember { mutableStateOf(false) }
+
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 32.dp)
+                                .padding(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
-                            )
-                            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                            Text("Play")
+                            // Play button
+                            Button(
+                                onClick = { /* TODO: play playlist */ },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                )
+                                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                                Text("Play")
+                            }
+
+                            // Shuffle button
+                            FilledTonalButton(
+                                onClick = { /* TODO: shuffle playlist */ },
+                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Shuffle,
+                                    contentDescription = "Shuffle",
+                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                )
+                                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                                Text("Shuffle play")
+                            }
+
+                            // More options
+                            Box {
+                                IconButton(onClick = { showMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "More options"
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.AddToQueue,
+                                                contentDescription = stringResource(R.string.menu_add_to_queue),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        },
+                                        text = { Text(stringResource(R.string.menu_add_to_queue)) },
+                                        onClick = { showMenu = false /* TODO: implement */ }
+                                    )
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.PlaylistAddCircle,
+                                                contentDescription = stringResource(R.string.menu_add_to_playlist),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        },
+                                        text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                                        onClick = { showMenu = false /* TODO: implement */ }
+                                    )
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = stringResource(R.string.menu_properties),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        },
+                                        text = { Text(stringResource(R.string.menu_properties)) },
+                                        onClick = { showMenu = false /* TODO: implement */ }
+                                    )
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = stringResource(R.string.menu_delete_playlist),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        },
+                                        text = { Text(stringResource(R.string.menu_delete_playlist)) },
+                                        onClick = { showMenu = false /* TODO: implement */ }
+                                    )
+                                }
+                            }
                         }
                     }
                 }

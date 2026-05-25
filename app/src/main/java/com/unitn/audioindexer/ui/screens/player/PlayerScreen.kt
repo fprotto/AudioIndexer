@@ -16,16 +16,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +42,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +64,7 @@ fun PlayerScreen(
     onQueueClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showMenu by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -79,8 +87,35 @@ fun PlayerScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp
             )
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.PlaylistAddCircle, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            // TODO: Implement add to playlist
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_properties)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Info, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            // TODO: Implement properties
+                        }
+                    )
+                }
             }
         }
 
