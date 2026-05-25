@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tracks_header">Tracce</string>
+    <string name="playlists_header">Playlist</string>
+    <string name="artists_header">Artisti</string>
+    <string name="albums_header">Album</string>
+    <string name="no_song_playing">Nessuna canzone in riproduzione</string>
+    <string name="title">Titolo</string>
+    <string name="artist">Artista</string>
+    <string name="release_year">Anno di pubblicazione</string>
+    <string name="search_songs">Cerca canzoni…</string>
+    <string name="search_playlists">Cerca playlist…</string>
+    <string name="search_albums">Cerca album…</string>
+    <string name="search_artists">Cerca artisti…</string>
+    <string name="now_playing_uppercase">IN RIPRODUZIONE</string>
+    <string name="up_next_uppercase">SUCCESSIVE</string>
+    <string name="menu_add_to_queue">Aggiungi alla coda</string>
+    <string name="menu_add_to_playlist">Aggiungi alla playlist</string>
+    <string name="menu_delete_playlist">Elimina playlist</string>
+    <string name="menu_rename">Rinomina</string>
+    <string name="menu_properties">Proprietà</string>
+    <string name="menu_delete">Elimina</string>
+    <string name="more_options">Opzioni</string>
+    <string name="settings">Impostazioni</string>
+    <string name="pause">Pausa</string>
+    <string name="shuffle_play">Riproduzione casuale</string>
+    <string name="shuffle">Casuale</string>
+    <string name="sort">Ordina</string>
+    <string name="new_playlist">Nuova playlist</string>
+    <string name="navigate_back">Torna indietro</string>
+    <string name="minimize">Minimizza</string>
+    <string name="play">Riproduci</string>
+    <string name="previous">Precedente</string>
+    <string name="next">Successivo</string>
+    <string name="repeat">Ripeti</string>
+    <string name="search">Cerca</string>
+    <string name="favorite_songs">Preferite</string>
+    <plurals name="songs_count">
+        <item quantity="one">%1$d canzone</item>
+        <item quantity="other">%1$d canzoni</item>
+        <item quantity="many">%1$d canzoni</item>
+    </plurals>
+</resources>
