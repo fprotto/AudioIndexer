@@ -27,6 +27,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -52,6 +53,7 @@ import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.PlaylistUiState
 import com.unitn.audioindexer.data.samplePlaylistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
+import com.unitn.audioindexer.ui.screens.MiniPlayer
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.songs.SongCard
 
@@ -230,6 +232,7 @@ fun PlaylistItem(
 @Composable
 fun PlaylistDetailScreen(
     id: Int?,
+    navController: NavController,
     modifier: Modifier = Modifier,
     state: PlaylistUiState = samplePlaylistsState(),
     onNavigateBack: () -> Unit = {}
@@ -239,102 +242,114 @@ fun PlaylistDetailScreen(
     val songCount = playlist.songs.size
     //val artistCount = playlist.songs.map { it.artist }.distinctBy { it.name }.size
 
-    LazyColumn(modifier = modifier.fillMaxSize()) {
+    Scaffold(
+        bottomBar = {
+            MiniPlayer(
+                onClick = { navController.navigate(Screen.Player.route) }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
 
-        // Cover + title + metadata block
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                // Back button pinned at the top
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopStart)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = "Navigate back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Column(
+            // Cover + title + metadata block
+            item {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 56.dp, bottom = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    // Playlist cover
-                    Box(
+                    // Back button pinned at the top
+                    IconButton(
+                        onClick = onNavigateBack,
                         modifier = Modifier
-                            .size(180.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        when (val cover = playlist.cover) {
-                            is IconSource.VectorIcon -> Icon(
-                                imageVector = cover.imageVector,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(80.dp)
-                            )
-                            is IconSource.BitmapIcon -> Image(
-                                bitmap = cover.bitmap,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-
-                    // Playlist name
-                    Text(
-                        text = playlist.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 24.dp)
-                    )
-
-                    // Metadata row: song count · artist count
-                    Text(
-                        text = buildString {
-                            append("$songCount ${if (songCount == 1) "song" else "songs"}")
-                            //append("  ·  ")
-                            //append("$artistCount ${if (artistCount == 1) "artist" else "artists"}")
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    // Play button
-                    Button(
-                        onClick = { /* TODO: play playlist */ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
+                            .padding(8.dp)
+                            .align(Alignment.TopStart)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = "Navigate back",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                        Text("Play")
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 56.dp, bottom = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Playlist cover
+                        Box(
+                            modifier = Modifier
+                                .size(180.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when (val cover = playlist.cover) {
+                                is IconSource.VectorIcon -> Icon(
+                                    imageVector = cover.imageVector,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(80.dp)
+                                )
+                                is IconSource.BitmapIcon -> Image(
+                                    bitmap = cover.bitmap,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+
+                        // Playlist name
+                        Text(
+                            text = playlist.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+
+                        // Metadata row: song count · artist count
+                        Text(
+                            text = buildString {
+                                append("$songCount ${if (songCount == 1) "song" else "songs"}")
+                                //append("  ·  ")
+                                //append("$artistCount ${if (artistCount == 1) "artist" else "artists"}")
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        // Play button
+                        Button(
+                            onClick = { /* TODO: play playlist */ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                            Text("Play")
+                        }
                     }
                 }
             }
-        }
 
-        // Song list
-        items(playlist.songs) { song ->
-            SongCard(song)
+            // Song list
+            items(playlist.songs) { song ->
+                SongCard(song)
+            }
         }
     }
 }

@@ -46,6 +46,7 @@ fun AppNavigation(
             val id = backStackEntry.arguments?.getString("albumId")?.toInt()
             AlbumDetailScreen(
                 id = id,
+                navController = navController,
                 onNavigateBack = navController::popBackStack
             )
         }
@@ -63,6 +64,7 @@ fun AppNavigation(
             val id = backStackEntry.arguments?.getString("playlistId")?.toInt()
             PlaylistDetailScreen(
                 id = id,
+                navController = navController,
                 onNavigateBack = navController::popBackStack
             )
         }

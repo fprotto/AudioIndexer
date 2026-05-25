@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -51,6 +52,8 @@ import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.sampleAlbumsState
 import com.unitn.audioindexer.data.sampleArtistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
+import com.unitn.audioindexer.ui.screens.MiniPlayer
+import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.screens.albums.AlbumItem
 import com.unitn.audioindexer.ui.songs.SongCard
 
@@ -215,87 +218,97 @@ fun ArtistDetailScreen(
         .sortedByDescending { it.playCount }
         .take(10)
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
-    ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                // Back button pinned at the top
-                IconButton(
-                    onClick = onNavigateBack,
+    Scaffold(
+        bottomBar = {
+            MiniPlayer(
+                onClick = { navController.navigate(Screen.Player.route) }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            item {
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopStart)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = "Navigate back",
-                        tint = MaterialTheme.colorScheme.onSurface
+                    // Back button pinned at the top
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = "Navigate back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    ArtistHeader(
+                        artist = artist,
+                        modifier = Modifier
+                            .padding(top = 56.dp, bottom = 24.dp)
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            if (topSongs.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Popular",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 24.dp, bottom = 8.dp)
                     )
                 }
 
-                ArtistHeader(
-                    artist = artist,
-                    modifier = Modifier
-                        .padding(top = 56.dp, bottom = 24.dp)
-                        .padding(horizontal = 16.dp)
-                )
-            }
-        }
-
-        if (topSongs.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Popular",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp, bottom = 8.dp)
-                )
+                items(topSongs) { song ->
+                    SongCard(song = song)
+                }
             }
 
-            items(topSongs) { song ->
-                SongCard(song = song)
-            }
-        }
+            if (artistAlbums.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Albums",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 24.dp, bottom = 16.dp)
+                    )
+                }
 
-        if (artistAlbums.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Albums",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp, bottom = 16.dp)
-                )
-            }
-
-            val chunkedAlbums = artistAlbums.chunked(2)
-            items(chunkedAlbums) { rowAlbums ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    rowAlbums.forEach { album ->
-                        Box(modifier = Modifier.weight(1f)) {
-                            AlbumItem(
-                                album = album,
-                                navController = navController,
-                                showAsCard = true
-                            )
+                val chunkedAlbums = artistAlbums.chunked(2)
+                items(chunkedAlbums) { rowAlbums ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        rowAlbums.forEach { album ->
+                            Box(modifier = Modifier.weight(1f)) {
+                                AlbumItem(
+                                    album = album,
+                                    navController = navController,
+                                    showAsCard = true
+                                )
+                            }
                         }
-                    }
-                    if (rowAlbums.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
+                        if (rowAlbums.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
