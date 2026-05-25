@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,9 +73,16 @@ fun MainScreen(
 @Composable
 fun TopBar() {
     TopAppBar(
-        title = { Text(stringResource(R.string.app_name)) },
+        title = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = stringResource(R.string.app_name),
+                modifier = Modifier.height(32.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
         actions = {
-            IconButton(onClick = { /* TODO: implement settings */}) {
+            IconButton(onClick = { /* TODO: implement settings */ }) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
         }
