@@ -368,7 +368,7 @@ fun PlaylistDetailScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.play),
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
                                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
