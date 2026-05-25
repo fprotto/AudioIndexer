@@ -12,4 +12,6 @@
     <string name="search_playlists">Search playlists…</string>
     <string name="search_albums">Search albums…</string>
     <string name="search_artists">Search artists…</string>
+    <string name="now_playing_uppercase">NOW PLAYING</string>
+    <string name="up_next_uppercase">UP NEXT</string>
 </resources>

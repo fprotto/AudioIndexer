@@ -41,7 +41,11 @@ fun MainScreen(
     Scaffold(
         modifier = modifier,
         topBar = { TopBar() },
-        bottomBar = { MiniPlayer() }
+        bottomBar = { 
+            MiniPlayer(
+                onClick = { navController.navigate(Screen.Player.route) }
+            ) 
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -78,12 +82,13 @@ fun TopBar() {
 }
 
 @Composable
-fun MiniPlayer() {
+fun MiniPlayer(onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium
     ) {
         Row(
