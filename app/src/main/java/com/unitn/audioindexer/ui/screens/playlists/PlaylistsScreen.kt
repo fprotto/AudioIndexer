@@ -273,7 +273,7 @@ fun PlaylistDetailScreen(
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
 
             // Cover + title + metadata block
@@ -288,7 +288,6 @@ fun PlaylistDetailScreen(
                     IconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
-                            .padding(8.dp)
                             .align(Alignment.TopStart)
                     ) {
                         Icon(

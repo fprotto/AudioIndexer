@@ -233,7 +233,7 @@ fun ArtistDetailScreen(
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
             item {
                 Box(
@@ -246,7 +246,6 @@ fun ArtistDetailScreen(
                     IconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
-                            .padding(8.dp)
                             .align(Alignment.TopStart)
                     ) {
                         Icon(

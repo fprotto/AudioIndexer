@@ -353,7 +353,7 @@ fun AlbumDetailScreen(
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
 
             // Cover + title + metadata block
@@ -368,7 +368,6 @@ fun AlbumDetailScreen(
                     IconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
-                            .padding(8.dp)
                             .align(Alignment.TopStart)
                     ) {
                         Icon(
