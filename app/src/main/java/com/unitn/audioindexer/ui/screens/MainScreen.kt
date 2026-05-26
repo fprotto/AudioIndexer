@@ -1,7 +1,12 @@
 package com.unitn.audioindexer.ui.screens
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -12,9 +17,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChangeCircle
+import androidx.compose.material.icons.filled.ImportExport
+import androidx.compose.material.icons.filled.InvertColors
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,25 +35,52 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.os.ConfigurationCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.ui.SettingsViewModel
+
+private fun Context.findActivity(): ComponentActivity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is ComponentActivity) return context
+        context = context.baseContext
+    }
+    return null
+}
 
 @Composable
 fun MainScreen(
     navController: NavController,
     sampleState: String, // FIXME: to remove once the data layer is implemented
     modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel = viewModel(
+        viewModelStoreOwner = LocalContext.current.findActivity()!!
+    ),
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val systemInDarkTheme = isSystemInDarkTheme()
     Scaffold(
         modifier = modifier,
-        topBar = { TopBar() },
+        topBar = { 
+            TopBar(
+                onThemeToggle = { settingsViewModel.toggleTheme(systemInDarkTheme) },
+                onLanguageChange = { lang -> settingsViewModel.setLanguage(context, lang) }
+            ) 
+        },
         bottomBar = { 
             MiniPlayer(
                 onClick = { navController.navigate(Screen.Player.route) }
@@ -69,21 +108,105 @@ fun MainScreen(
     }
 }
 
+@SuppressLint("LocalContextConfigurationRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(
+    onThemeToggle: () -> Unit,
+    onLanguageChange: (String) -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     TopAppBar(
         title = {
             Icon(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = stringResource(R.string.app_name),
+                contentDescription = null,
                 modifier = Modifier.height(32.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         actions = {
-            IconButton(onClick = { /* TODO: implement settings */ }) {
-                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
+            Box {
+                IconButton(onClick = { showMenu = !showMenu }) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.settings)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.SettingsInputComponent,
+                                contentDescription = stringResource(R.string.settings_player_options)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_player_options)) },
+                        onClick = {
+                            /* TODO: implement */
+                            showMenu = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Language,
+                                contentDescription = stringResource(R.string.settings_change_language)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_change_language)) },
+                        onClick = {
+                            val currentLocale = ConfigurationCompat.getLocales(context.resources.configuration)[0]?.language ?: "en"
+                            val nextLocale = if (currentLocale == "it") "en" else "it"
+                            onLanguageChange(nextLocale)
+                            showMenu = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.InvertColors,
+                                contentDescription = stringResource(R.string.settings_switch_theme)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_switch_theme)) },
+                        onClick = {
+                            onThemeToggle()
+                            showMenu = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.ImportExport,
+                                contentDescription = stringResource(R.string.settings_export_config)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_export_config)) },
+                        onClick = {
+                            /* TODO: implement */
+                            showMenu = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.ChangeCircle,
+                                contentDescription = stringResource(R.string.settings_switch_profile)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_switch_profile)) },
+                        onClick = {
+                            /* TODO: implement */
+                            showMenu = false
+                        }
+                    )
+                }
             }
         }
     )

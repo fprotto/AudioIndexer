@@ -113,7 +113,7 @@ fun AudioIndexerTheme(
             window.statusBarColor = colors.primary.toArgb()
             WindowCompat
                 .getInsetsController(window, view)
-                .isAppearanceLightStatusBars = useDarkTheme
+                .isAppearanceLightStatusBars = !useDarkTheme
         }
     }
 
