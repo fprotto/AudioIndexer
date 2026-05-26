@@ -417,7 +417,8 @@ private fun PlaylistHeader(
                 // Play button
                 Button(
                     onClick = { /* TODO: play playlist */ },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
@@ -425,12 +426,17 @@ private fun PlaylistHeader(
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
                     Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.play))
+                    Text(
+                        text = stringResource(R.string.play),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
                 // Shuffle button
                 FilledTonalButton(
                     onClick = { /* TODO: shuffle playlist */ },
+                    modifier = Modifier.weight(1f),
                     contentPadding = ButtonDefaults.ButtonWithIconContentPadding
                 ) {
                     Icon(
@@ -439,7 +445,11 @@ private fun PlaylistHeader(
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
                     Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.shuffle_play))
+                    Text(
+                        text = stringResource(R.string.shuffle_play),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
                 // More options
