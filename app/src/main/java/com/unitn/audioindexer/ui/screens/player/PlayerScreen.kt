@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.ui.screens.player
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,229 +69,343 @@ fun PlayerScreen(
     onQueueClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showMenu by remember { mutableStateOf(false) }
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(horizontal = 24.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Top Bar
+        if (isLandscape) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        Icons.Default.KeyboardArrowDown,
-                        contentDescription = stringResource(R.string.minimize)
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.now_playing_uppercase),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
-                )
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_add_to_playlist)) },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.PlaylistAddCircle,
-                                    contentDescription = stringResource(R.string.menu_add_to_playlist)
-                                )
-                            },
-                            onClick = {
-                                showMenu = false
-                                // TODO: Implement add to playlist
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_properties)) },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Info,
-                                    contentDescription = stringResource(R.string.menu_properties)
-                                )
-                            },
-                            onClick = {
-                                showMenu = false
-                                // TODO: Implement properties
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Album Art Placeholder
-            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.MusicNote,
-                    contentDescription = null,
-                    modifier = Modifier.size(120.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Song Info
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = uiState.currentSongTitle,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = uiState.currentArtist,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Progress Slider
-            Column {
-                Slider(
-                    value = uiState.progress,
-                    onValueChange = viewModel::seekTo,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = uiState.positionText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = uiState.durationText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Playback Controls
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                    .fillMaxSize()
+                    .safeDrawingPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = viewModel::toggleShuffle,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = if (uiState.isShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
+                // Left side: Album Art
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Shuffle,
-                        contentDescription = stringResource(R.string.shuffle)
+                    AlbumArt(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
                     )
                 }
 
-                IconButton(onClick = viewModel::skipPrevious, modifier = Modifier.size(48.dp)) {
-                    Icon(
-                        Icons.Default.SkipPrevious,
-                        contentDescription = stringResource(R.string.previous),
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-
-                FilledIconButton(
-                    onClick = viewModel::togglePlayPause,
-                    modifier = Modifier.size(72.dp),
-                    shape = RoundedCornerShape(24.dp)
+                // Right side: Controls
+                Column(
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (uiState.isPlaying) stringResource(R.string.pause) else stringResource(R.string.play),
-                        modifier = Modifier.size(40.dp)
+                    PlayerTopBar(
+                        onBackClick = onBackClick,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                }
 
-                IconButton(onClick = viewModel::skipNext, modifier = Modifier.size(48.dp)) {
-                    Icon(
-                        Icons.Default.SkipNext,
-                        contentDescription = stringResource(R.string.next),
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
+                    Spacer(modifier = Modifier.weight(1f))
 
-                IconButton(
-                    onClick = viewModel::cycleRepeatMode,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = if (uiState.repeatMode != Player.REPEAT_MODE_OFF) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    SongInfo(
+                        uiState = uiState,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                ) {
-                    Icon(
-                        when (uiState.repeatMode) {
-                            Player.REPEAT_MODE_ONE -> Icons.Default.RepeatOne
-                            else -> Icons.Default.Repeat
-                        },
-                        contentDescription = stringResource(R.string.repeat)
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    PlayerProgress(
+                        uiState = uiState,
+                        onSeek = viewModel::seekTo,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    PlaybackControls(
+                        uiState = uiState,
+                        viewModel = viewModel,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    BottomActions(
+                        onQueueClick = onQueueClick,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Bottom Controls (Queue, etc.)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .safeDrawingPadding()
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(onClick = onQueueClick) {
-                    Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.up_next_uppercase))
-                }
+                PlayerTopBar(onBackClick = onBackClick)
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                AlbumArt(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                )
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                SongInfo(uiState = uiState)
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                PlayerProgress(uiState = uiState, onSeek = viewModel::seekTo)
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                PlaybackControls(uiState = uiState, viewModel = viewModel)
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                BottomActions(onQueueClick = onQueueClick)
             }
+        }
+    }
+}
+
+@Composable
+private fun PlayerTopBar(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBackClick) {
+            Icon(
+                Icons.Default.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.minimize)
+            )
+        }
+        Text(
+            text = stringResource(R.string.now_playing_uppercase),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp
+        )
+        Box {
+            IconButton(onClick = { showMenu = true }) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.more_options)
+                )
+            }
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.PlaylistAddCircle,
+                            contentDescription = stringResource(R.string.menu_add_to_playlist)
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        // TODO: Implement add to playlist
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_properties)) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = stringResource(R.string.menu_properties)
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        // TODO: Implement properties
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AlbumArt(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.MusicNote,
+            contentDescription = null,
+            modifier = Modifier.size(120.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+    }
+}
+
+@Composable
+private fun SongInfo(
+    uiState: PlayerUiState,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text(
+            text = uiState.currentSongTitle,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = uiState.currentArtist,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun PlayerProgress(
+    uiState: PlayerUiState,
+    onSeek: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Slider(
+            value = uiState.progress,
+            onValueChange = onSeek,
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = uiState.positionText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+            Text(
+                text = uiState.durationText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlaybackControls(
+    uiState: PlayerUiState,
+    viewModel: PlayerViewModel,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = viewModel::toggleShuffle,
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = if (uiState.isShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+        ) {
+            Icon(
+                Icons.Default.Shuffle,
+                contentDescription = stringResource(R.string.shuffle)
+            )
+        }
+
+        IconButton(onClick = viewModel::skipPrevious, modifier = Modifier.size(48.dp)) {
+            Icon(
+                Icons.Default.SkipPrevious,
+                contentDescription = stringResource(R.string.previous),
+                modifier = Modifier.size(36.dp)
+            )
+        }
+
+        FilledIconButton(
+            onClick = viewModel::togglePlayPause,
+            modifier = Modifier.size(72.dp),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Icon(
+                if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = if (uiState.isPlaying) stringResource(R.string.pause) else stringResource(R.string.play),
+                modifier = Modifier.size(40.dp)
+            )
+        }
+
+        IconButton(onClick = viewModel::skipNext, modifier = Modifier.size(48.dp)) {
+            Icon(
+                Icons.Default.SkipNext,
+                contentDescription = stringResource(R.string.next),
+                modifier = Modifier.size(36.dp)
+            )
+        }
+
+        IconButton(
+            onClick = viewModel::cycleRepeatMode,
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = if (uiState.repeatMode != Player.REPEAT_MODE_OFF) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+        ) {
+            Icon(
+                when (uiState.repeatMode) {
+                    Player.REPEAT_MODE_ONE -> Icons.Default.RepeatOne
+                    else -> Icons.Default.Repeat
+                },
+                contentDescription = stringResource(R.string.repeat)
+            )
+        }
+    }
+}
+
+@Composable
+private fun BottomActions(
+    onQueueClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        TextButton(onClick = onQueueClick) {
+            Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.up_next_uppercase))
         }
     }
 }

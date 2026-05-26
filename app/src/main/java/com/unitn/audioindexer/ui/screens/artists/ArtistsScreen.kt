@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.ui.screens.artists
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -223,6 +225,10 @@ fun ArtistDetailScreen(
         .sortedByDescending { it.playCount }
         .take(10)
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val columns = if (isLandscape) 4 else 2
+
     Scaffold(
         bottomBar = {
             MiniPlayer(
@@ -293,7 +299,7 @@ fun ArtistDetailScreen(
                     )
                 }
 
-                val chunkedAlbums = artistAlbums.chunked(2)
+                val chunkedAlbums = artistAlbums.chunked(columns)
                 items(chunkedAlbums) { rowAlbums ->
                     Row(
                         modifier = Modifier
@@ -311,7 +317,7 @@ fun ArtistDetailScreen(
                                 )
                             }
                         }
-                        if (rowAlbums.size == 1) {
+                        repeat(columns - rowAlbums.size) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }

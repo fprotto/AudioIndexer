@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.ui.screens.albums
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,7 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddToQueue
@@ -49,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -342,6 +347,8 @@ fun AlbumDetailScreen(
     val album = state.albums.find { it.id == id } ?: return
 
     val songCount = album.songs.size
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Scaffold(
         bottomBar = {
@@ -350,132 +357,168 @@ fun AlbumDetailScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(bottom = padding.calculateBottomPadding())
-        ) {
-
-            // Cover + title + metadata block
-            item {
-                Box(
+        if (isLandscape) {
+            Row(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(bottom = padding.calculateBottomPadding())
+            ) {
+                AlbumHeader(
+                    album = album,
+                    songCount = songCount,
+                    onNavigateBack = onNavigateBack,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .statusBarsPadding()
+                        .weight(0.4f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                )
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .fillMaxHeight()
                 ) {
-                    // Back button pinned at the top
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_back),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 56.dp, bottom = 24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Album cover
-                        Box(
-                            modifier = Modifier
-                                .size(180.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            when (val cover = album.cover) {
-                                is IconSource.VectorIcon -> Icon(
-                                    imageVector = cover.imageVector,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(80.dp)
-                                )
-                                is IconSource.BitmapIcon -> Image(
-                                    bitmap = cover.bitmap,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-
-                        // Album name
-                        Text(
-                            text = album.name,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-
-                        // Artist row
-                        Text(
-                            text = album.artist.name,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Normal,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-
-                        // Metadata row: song count · release year
-                        Text(
-                            text = buildString {
-                                append(LocalResources.current.getQuantityString(
-                                    R.plurals.songs_count,
-                                    songCount,
-                                    songCount
-                                ))
-                                append("  ·  ")
-                                append("${album.releaseYear}")
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        // Play button + Menu
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 32.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = { /* TODO: play album */ },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = stringResource(R.string.play),
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                                )
-                                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(stringResource(R.string.play))
-                            }
-
-                            var showMenu by remember { mutableStateOf(false) }
-                            AlbumMenu(
-                                expanded = showMenu,
-                                onDismissRequest = { showMenu = false },
-                                onMoreOptionsClick = { showMenu = true }
-                            )
-                        }
+                    items(album.songs) { song ->
+                        SongCard(song)
                     }
                 }
             }
+        } else {
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(bottom = padding.calculateBottomPadding())
+            ) {
+                item {
+                    AlbumHeader(
+                        album = album,
+                        songCount = songCount,
+                        onNavigateBack = onNavigateBack
+                    )
+                }
+                items(album.songs) { song ->
+                    SongCard(song)
+                }
+            }
+        }
+    }
+}
 
-            // Song list
-            items(album.songs) { song ->
-                SongCard(song)
+@Composable
+private fun AlbumHeader(
+    album: Album,
+    songCount: Int,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .statusBarsPadding()
+    ) {
+        // Back button pinned at the top
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                contentDescription = stringResource(R.string.navigate_back),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 56.dp, bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Album cover
+            Box(
+                modifier = Modifier
+                    .size(180.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                when (val cover = album.cover) {
+                    is IconSource.VectorIcon -> Icon(
+                        imageVector = cover.imageVector,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(80.dp)
+                    )
+                    is IconSource.BitmapIcon -> Image(
+                        bitmap = cover.bitmap,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+
+            // Album name
+            Text(
+                text = album.name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            // Artist row
+            Text(
+                text = album.artist.name,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            // Metadata row: song count · release year
+            Text(
+                text = buildString {
+                    append(LocalResources.current.getQuantityString(
+                        R.plurals.songs_count,
+                        songCount,
+                        songCount
+                    ))
+                    append("  ·  ")
+                    append("${album.releaseYear}")
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            // Play button + Menu
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { /* TODO: play album */ },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = stringResource(R.string.play),
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.play))
+                }
+
+                var showMenu by remember { mutableStateOf(false) }
+                AlbumMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    onMoreOptionsClick = { showMenu = true }
+                )
             }
         }
     }
