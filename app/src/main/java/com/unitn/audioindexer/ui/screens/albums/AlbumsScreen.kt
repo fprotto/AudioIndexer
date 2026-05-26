@@ -367,10 +367,10 @@ fun AlbumDetailScreen(
                     album = album,
                     songCount = songCount,
                     onNavigateBack = onNavigateBack,
+                    isLandscape = true,
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
-                        .verticalScroll(rememberScrollState())
                 )
                 LazyColumn(
                     modifier = Modifier
@@ -408,7 +408,8 @@ private fun AlbumHeader(
     album: Album,
     songCount: Int,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLandscape: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -431,14 +432,22 @@ private fun AlbumHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 56.dp, bottom = 24.dp),
+                .padding(
+                    top = if (isLandscape) 40.dp else 56.dp,
+                    bottom = if (isLandscape) 16.dp else 24.dp
+                )
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = if (isLandscape) Arrangement.SpaceEvenly else Arrangement.spacedBy(16.dp)
         ) {
+            if (isLandscape) {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // Album cover
             Box(
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(if (isLandscape) 120.dp else 180.dp)
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -448,7 +457,7 @@ private fun AlbumHeader(
                         imageVector = cover.imageVector,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
                     is IconSource.BitmapIcon -> Image(
                         bitmap = cover.bitmap,
@@ -459,58 +468,67 @@ private fun AlbumHeader(
                 }
             }
 
-            // Album name
-            Text(
-                text = album.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(if (isLandscape) 2.dp else 8.dp)
+            ) {
+                // Album name
+                Text(
+                    text = album.name,
+                    style = if (isLandscape) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    maxLines = if (isLandscape) 2 else Int.MAX_VALUE,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            // Artist row
-            Text(
-                text = album.artist.name,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+                // Artist row
+                Text(
+                    text = album.artist.name,
+                    style = if (isLandscape) MaterialTheme.typography.labelMedium else MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                )
 
-            // Metadata row: song count · release year
-            Text(
-                text = buildString {
-                    append(LocalResources.current.getQuantityString(
-                        R.plurals.songs_count,
-                        songCount,
-                        songCount
-                    ))
-                    append("  ·  ")
-                    append("${album.releaseYear}")
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                // Metadata row: song count · release year
+                Text(
+                    text = buildString {
+                        append(LocalResources.current.getQuantityString(
+                            R.plurals.songs_count,
+                            songCount,
+                            songCount
+                        ))
+                        append("  ·  ")
+                        append("${album.releaseYear}")
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             // Play button + Menu
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     onClick = { /* TODO: play album */ },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    contentPadding = if (isLandscape) ButtonDefaults.TextButtonContentPadding else ButtonDefaults.ButtonWithIconContentPadding
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = stringResource(R.string.play),
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                        modifier = Modifier.size(if (isLandscape) 18.dp else ButtonDefaults.IconSize)
                     )
-                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.play))
+                    Spacer(modifier = Modifier.size(if (isLandscape) 4.dp else ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(R.string.play),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = if (isLandscape) MaterialTheme.typography.labelLarge else MaterialTheme.typography.bodyLarge
+                    )
                 }
 
                 var showMenu by remember { mutableStateOf(false) }

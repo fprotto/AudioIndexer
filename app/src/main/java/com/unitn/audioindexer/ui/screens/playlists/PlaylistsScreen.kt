@@ -290,10 +290,10 @@ fun PlaylistDetailScreen(
                     playlist = playlist,
                     songCount = songCount,
                     onNavigateBack = onNavigateBack,
+                    isLandscape = true,
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
-                        .verticalScroll(rememberScrollState())
                 )
                 LazyColumn(
                     modifier = Modifier
@@ -331,7 +331,8 @@ private fun PlaylistHeader(
     playlist: Playlist,
     songCount: Int,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLandscape: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -354,14 +355,22 @@ private fun PlaylistHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 56.dp, bottom = 24.dp),
+                .padding(
+                    top = if (isLandscape) 40.dp else 56.dp,
+                    bottom = if (isLandscape) 16.dp else 24.dp
+                )
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = if (isLandscape) Arrangement.SpaceEvenly else Arrangement.spacedBy(16.dp)
         ) {
+            if (isLandscape) {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // Playlist cover
             Box(
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(if (isLandscape) 120.dp else 180.dp)
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -371,7 +380,7 @@ private fun PlaylistHeader(
                         imageVector = cover.imageVector,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
                     is IconSource.BitmapIcon -> Image(
                         bitmap = cover.bitmap,
@@ -382,35 +391,39 @@ private fun PlaylistHeader(
                 }
             }
 
-            // Playlist name
-            Text(
-                text = playlist.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(if (isLandscape) 4.dp else 8.dp)
+            ) {
+                // Playlist name
+                Text(
+                    text = playlist.name,
+                    style = if (isLandscape) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    maxLines = if (isLandscape) 2 else Int.MAX_VALUE,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            // Metadata row: song count · artist count
-            Text(
-                text = buildString {
-                    append(LocalResources.current.getQuantityString(
-                        R.plurals.songs_count,
-                        songCount,
-                        songCount
-                    ))
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                // Metadata row: song count
+                Text(
+                    text = buildString {
+                        append(LocalResources.current.getQuantityString(
+                            R.plurals.songs_count,
+                            songCount,
+                            songCount
+                        ))
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             // Action buttons row
             var showMenu by remember { mutableStateOf(false) }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -418,18 +431,19 @@ private fun PlaylistHeader(
                 Button(
                     onClick = { /* TODO: play playlist */ },
                     modifier = Modifier.weight(1f),
-                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                    contentPadding = if (isLandscape) ButtonDefaults.TextButtonContentPadding else ButtonDefaults.ButtonWithIconContentPadding
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = stringResource(R.string.play),
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                        modifier = Modifier.size(if (isLandscape) 18.dp else ButtonDefaults.IconSize)
                     )
-                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Spacer(modifier = Modifier.size(if (isLandscape) 4.dp else ButtonDefaults.IconSpacing))
                     Text(
                         text = stringResource(R.string.play),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = if (isLandscape) MaterialTheme.typography.labelLarge else MaterialTheme.typography.bodyLarge
                     )
                 }
 
@@ -437,18 +451,19 @@ private fun PlaylistHeader(
                 FilledTonalButton(
                     onClick = { /* TODO: shuffle playlist */ },
                     modifier = Modifier.weight(1f),
-                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                    contentPadding = if (isLandscape) ButtonDefaults.TextButtonContentPadding else ButtonDefaults.ButtonWithIconContentPadding
                 ) {
                     Icon(
                         imageVector = Icons.Default.Shuffle,
                         contentDescription = stringResource(R.string.shuffle_play),
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                        modifier = Modifier.size(if (isLandscape) 18.dp else ButtonDefaults.IconSize)
                     )
-                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Spacer(modifier = Modifier.size(if (isLandscape) 4.dp else ButtonDefaults.IconSpacing))
                     Text(
                         text = stringResource(R.string.shuffle_play),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = if (isLandscape) MaterialTheme.typography.labelLarge else MaterialTheme.typography.bodyLarge
                     )
                 }
 
