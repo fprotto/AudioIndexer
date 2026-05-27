@@ -79,7 +79,8 @@ fun MainScreen(
         topBar = { 
             TopBar(
                 onThemeToggle = { settingsViewModel.toggleTheme(systemInDarkTheme) },
-                onLanguageChange = { lang -> settingsViewModel.setLanguage(context, lang) }
+                onLanguageChange = { lang -> settingsViewModel.setLanguage(context, lang) },
+                languages = settingsViewModel.getSupportedLanguages(context)
             ) 
         },
         bottomBar = { 
@@ -114,9 +115,11 @@ fun MainScreen(
 @Composable
 fun TopBar(
     onThemeToggle: () -> Unit,
-    onLanguageChange: (String) -> Unit
+    onLanguageChange: (String) -> Unit,
+    languages: List<Pair<String, String>>
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showLanguageMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     TopAppBar(
@@ -162,10 +165,8 @@ fun TopBar(
                         },
                         text = { Text(stringResource(R.string.settings_change_language)) },
                         onClick = {
-                            val currentLocale = ConfigurationCompat.getLocales(context.resources.configuration)[0]?.language ?: "en"
-                            val nextLocale = if (currentLocale == "it") "en" else "it"
-                            onLanguageChange(nextLocale)
                             showMenu = false
+                            showLanguageMenu = true
                         }
                     )
                     DropdownMenuItem(
@@ -207,6 +208,27 @@ fun TopBar(
                             showMenu = false
                         }
                     )
+                }
+
+                DropdownMenu(
+                    expanded = showLanguageMenu,
+                    onDismissRequest = { showLanguageMenu = false }
+                ) {
+                    val currentLocale = ConfigurationCompat.getLocales(context.resources.configuration)[0]?.language ?: "en"
+                    languages.forEach { (code, name) ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = name,
+                                    fontWeight = if (currentLocale == code) FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            onClick = {
+                                onLanguageChange(code)
+                                showLanguageMenu = false
+                            }
+                        )
+                    }
                 }
             }
         }
