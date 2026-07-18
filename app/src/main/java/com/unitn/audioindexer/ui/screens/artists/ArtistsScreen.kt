@@ -52,25 +52,35 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
-import com.unitn.audioindexer.data.components.AlbumUiState
 import com.unitn.audioindexer.data.components.Artist
-import com.unitn.audioindexer.data.components.ArtistUiState
 import com.unitn.audioindexer.data.components.IconSource
-import com.unitn.audioindexer.data.sampleAlbumsState
-import com.unitn.audioindexer.data.sampleArtistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.MiniPlayer
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.screens.albums.AlbumItem
 import com.unitn.audioindexer.ui.songs.SongCard
+import com.unitn.audioindexer.ui.toImageVector
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unitn.audioindexer.AudioIndexerApplication
+import com.unitn.audioindexer.data.components.Album
+import com.unitn.audioindexer.ui.ArtistsViewModel
+import com.unitn.audioindexer.ui.MusicViewModelFactory
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun ArtistsScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository))
+
     var searchQuery by remember { mutableStateOf("") }
-    val allArtists = remember { sampleArtistsState().artists }
+    val allArtists by viewModel.artists.collectAsState()
 
     val filteredArtists = remember(searchQuery, allArtists) {
         allArtists.filter {
@@ -209,17 +219,22 @@ fun ArtistDetailScreen(
     id: Int?,
     navController: NavController,
     modifier: Modifier = Modifier,
-    state: ArtistUiState = sampleArtistsState(),
-    albumsState: AlbumUiState = sampleAlbumsState(),
     onNavigateBack: () -> Unit = {}
 ) {
-    val artist = state.artists.find {
-        it.id == id
-    } ?: return
-
-    val artistAlbums = albumsState.albums.filter {
-        it.artist.id == artist.id
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    
+    var artist by remember { mutableStateOf<Artist?>(null) }
+    var artistAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }
+    
+    LaunchedEffect(id) {
+        if (id != null) {
+            artist = repository.getArtistById(id)
+            artistAlbums = repository.allAlbums.first().filter { it.artist.id == id }
+        }
     }
+
+    val currentArtist = artist ?: return
 
     val topSongs = artistAlbums.flatMap { it.songs }
         .sortedByDescending { it.playCount }
@@ -261,8 +276,8 @@ fun ArtistDetailScreen(
                         )
                     }
 
-                    ArtistHeader(
-                        artist = artist,
+            ArtistHeader(
+                        artist = currentArtist,
                         modifier = Modifier
                             .padding(top = 56.dp, bottom = 24.dp)
                             .padding(horizontal = 16.dp)
@@ -346,17 +361,20 @@ fun ArtistHeader(
         ) {
             when (val propic = artist.propic) {
                 is IconSource.VectorIcon -> Icon(
-                    imageVector = propic.imageVector,
+                    imageVector = propic.toImageVector(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(60.dp)
                 )
-                is IconSource.BitmapIcon -> Image(
-                    bitmap = propic.bitmap,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                is IconSource.UriIcon -> {
+                    // TODO: Use Coil for URI
+                    Icon(
+                        imageVector = Icons.Default.PersonOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(60.dp)
+                    )
+                }
             }
         }
         Text(

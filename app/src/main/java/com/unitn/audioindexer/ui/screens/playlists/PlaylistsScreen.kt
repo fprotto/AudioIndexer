@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.AddToQueue
+import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
@@ -66,20 +67,30 @@ import androidx.navigation.NavController
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Playlist
-import com.unitn.audioindexer.data.components.PlaylistUiState
-import com.unitn.audioindexer.data.samplePlaylistsState
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.MiniPlayer
 import com.unitn.audioindexer.ui.screens.Screen
+import com.unitn.audioindexer.ui.toImageVector
 import com.unitn.audioindexer.ui.songs.SongCard
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unitn.audioindexer.AudioIndexerApplication
+import com.unitn.audioindexer.ui.MusicViewModelFactory
+import com.unitn.audioindexer.ui.PlaylistsViewModel
 
 @Composable
 fun PlaylistsScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val viewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(repository))
+
     var searchQuery by remember { mutableStateOf("") }
-    val allPlaylists = remember { samplePlaylistsState().playlists }
+    val allPlaylists by viewModel.playlists.collectAsState()
 
     val filteredPlaylists = remember(searchQuery, allPlaylists) {
         allPlaylists.filter {
@@ -217,17 +228,20 @@ fun PlaylistItem(
             ) {
                 when (val cover = playlist.cover) {
                     is IconSource.VectorIcon -> Icon(
-                        imageVector = cover.imageVector,
+                        imageVector = cover.toImageVector(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(56.dp)
                     )
-                    is IconSource.BitmapIcon -> Image(
-                        bitmap = cover.bitmap,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    is IconSource.UriIcon -> {
+                        // TODO: Use Coil
+                        Icon(
+                            imageVector = Icons.Default.Album,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(56.dp)
+                        )
+                    }
                 }
             }
 
@@ -264,12 +278,22 @@ fun PlaylistDetailScreen(
     id: Int?,
     navController: NavController,
     modifier: Modifier = Modifier,
-    state: PlaylistUiState = samplePlaylistsState(),
     onNavigateBack: () -> Unit = {}
 ) {
-    val playlist = state.playlists.find { it.id == id } ?: return
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    
+    var playlist by remember { mutableStateOf<Playlist?>(null) }
+    
+    LaunchedEffect(id) {
+        if (id != null) {
+            playlist = repository.getPlaylistById(id)
+        }
+    }
 
-    val songCount = playlist.songs.size
+    val currentPlaylist = playlist ?: return
+
+    val songCount = currentPlaylist.songs.size
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -287,7 +311,7 @@ fun PlaylistDetailScreen(
                     .padding(bottom = padding.calculateBottomPadding())
             ) {
                 PlaylistHeader(
-                    playlist = playlist,
+                    playlist = currentPlaylist,
                     songCount = songCount,
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
@@ -300,7 +324,7 @@ fun PlaylistDetailScreen(
                         .weight(0.6f)
                         .fillMaxHeight()
                 ) {
-                    items(playlist.songs) { song ->
+                    items(currentPlaylist.songs) { song ->
                         SongCard(song)
                     }
                 }
@@ -313,12 +337,12 @@ fun PlaylistDetailScreen(
             ) {
                 item {
                     PlaylistHeader(
-                        playlist = playlist,
+                        playlist = currentPlaylist,
                         songCount = songCount,
                         onNavigateBack = onNavigateBack
                     )
                 }
-                items(playlist.songs) { song ->
+                items(currentPlaylist.songs) { song ->
                     SongCard(song)
                 }
             }
@@ -377,17 +401,20 @@ private fun PlaylistHeader(
             ) {
                 when (val cover = playlist.cover) {
                     is IconSource.VectorIcon -> Icon(
-                        imageVector = cover.imageVector,
+                        imageVector = cover.toImageVector(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
-                    is IconSource.BitmapIcon -> Image(
-                        bitmap = cover.bitmap,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    is IconSource.UriIcon -> {
+                        // TODO: Use Coil
+                        Icon(
+                            imageVector = Icons.Default.Album,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
+                        )
+                    }
                 }
             }
 

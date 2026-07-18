@@ -14,11 +14,19 @@ import com.unitn.audioindexer.ui.SettingsViewModel
 import com.unitn.audioindexer.ui.navigation.AppNavigation
 import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Simple seeding for demo purposes
+        val repository = (application as AudioIndexerApplication).repository
+        lifecycleScope.launch {}
+
         enableEdgeToEdge()
         setContent {
             AudioIndexerTheme(useDarkTheme = settingsViewModel.isDarkTheme ?: isSystemInDarkTheme()) {

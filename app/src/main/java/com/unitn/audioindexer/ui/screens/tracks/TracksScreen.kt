@@ -34,9 +34,14 @@ import androidx.compose.ui.unit.dp
 import com.unitn.audioindexer.R
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.Song
-import com.unitn.audioindexer.data.sampleSongs
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.songs.SongCard
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unitn.audioindexer.AudioIndexerApplication
+import com.unitn.audioindexer.ui.MusicViewModelFactory
+import com.unitn.audioindexer.ui.TracksViewModel
 
 enum class SongSortOrder {
     TITLE, ARTIST, YEAR
@@ -47,11 +52,15 @@ fun TracksScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val viewModel: TracksViewModel = viewModel(factory = MusicViewModelFactory(repository))
+    
     var searchQuery by remember { mutableStateOf("") }
     var sortOrder by remember { mutableStateOf(SongSortOrder.TITLE) }
     var isShuffled by remember { mutableStateOf(false) }
 
-    val allSongs = remember { sampleSongs() }
+    val allSongs by viewModel.songs.collectAsState()
 
     val filteredSongs = remember(searchQuery, allSongs) {
         allSongs.filter {

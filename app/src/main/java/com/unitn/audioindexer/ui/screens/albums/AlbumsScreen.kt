@@ -63,21 +63,31 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.Album
-import com.unitn.audioindexer.data.components.AlbumUiState
 import com.unitn.audioindexer.data.components.IconSource
-import com.unitn.audioindexer.data.sampleAlbumsState
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.MiniPlayer
 import com.unitn.audioindexer.ui.screens.Screen
+import com.unitn.audioindexer.ui.toImageVector
 import com.unitn.audioindexer.ui.songs.SongCard
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.unitn.audioindexer.AudioIndexerApplication
+import com.unitn.audioindexer.ui.AlbumsViewModel
+import com.unitn.audioindexer.ui.MusicViewModelFactory
 
 @Composable
 fun AlbumsScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository))
+
     var searchQuery by remember { mutableStateOf("") }
-    val allAlbums = remember { sampleAlbumsState().albums }
+    val allAlbums by viewModel.albums.collectAsState()
 
     val filteredAlbums = remember(searchQuery, allAlbums) {
         allAlbums.filter {
@@ -191,17 +201,20 @@ fun AlbumItem(
                 ) {
                     when (val cover = album.cover) {
                         is IconSource.VectorIcon -> Icon(
-                            imageVector = cover.imageVector,
+                            imageVector = cover.toImageVector(),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(56.dp)
                         )
-                        is IconSource.BitmapIcon -> Image(
-                            bitmap = cover.bitmap,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        is IconSource.UriIcon -> {
+                            // TODO: Use Coil
+                            Icon(
+                                imageVector = Icons.Default.Album,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(56.dp)
+                            )
+                        }
                     }
                 }
 
@@ -341,12 +354,22 @@ fun AlbumDetailScreen(
     id: Int?,
     navController: NavController,
     modifier: Modifier = Modifier,
-    state: AlbumUiState = sampleAlbumsState(),
     onNavigateBack: () -> Unit = {}
 ) {
-    val album = state.albums.find { it.id == id } ?: return
+    val context = LocalContext.current
+    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    
+    var album by remember { mutableStateOf<Album?>(null) }
+    
+    LaunchedEffect(id) {
+        if (id != null) {
+            album = repository.getAlbumById(id)
+        }
+    }
 
-    val songCount = album.songs.size
+    val currentAlbum = album ?: return
+
+    val songCount = currentAlbum.songs.size
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -364,7 +387,7 @@ fun AlbumDetailScreen(
                     .padding(bottom = padding.calculateBottomPadding())
             ) {
                 AlbumHeader(
-                    album = album,
+                    album = currentAlbum,
                     songCount = songCount,
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
@@ -377,7 +400,7 @@ fun AlbumDetailScreen(
                         .weight(0.6f)
                         .fillMaxHeight()
                 ) {
-                    items(album.songs) { song ->
+                    items(currentAlbum.songs) { song ->
                         SongCard(song)
                     }
                 }
@@ -390,12 +413,12 @@ fun AlbumDetailScreen(
             ) {
                 item {
                     AlbumHeader(
-                        album = album,
+                        album = currentAlbum,
                         songCount = songCount,
                         onNavigateBack = onNavigateBack
                     )
                 }
-                items(album.songs) { song ->
+                items(currentAlbum.songs) { song ->
                     SongCard(song)
                 }
             }
@@ -454,17 +477,20 @@ private fun AlbumHeader(
             ) {
                 when (val cover = album.cover) {
                     is IconSource.VectorIcon -> Icon(
-                        imageVector = cover.imageVector,
+                        imageVector = cover.toImageVector(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
-                    is IconSource.BitmapIcon -> Image(
-                        bitmap = cover.bitmap,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    is IconSource.UriIcon -> {
+                        // TODO: Use Coil
+                        Icon(
+                            imageVector = Icons.Default.Album,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
+                        )
+                    }
                 }
             }
 
