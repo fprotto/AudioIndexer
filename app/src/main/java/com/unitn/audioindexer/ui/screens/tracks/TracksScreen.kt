@@ -40,8 +40,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
-import com.unitn.audioindexer.ui.MusicViewModelFactory
-import com.unitn.audioindexer.ui.TracksViewModel
+import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
+import com.unitn.audioindexer.ui.viewmodels.TracksViewModel
 
 enum class SongSortOrder {
     TITLE, ARTIST, YEAR

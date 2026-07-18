@@ -13,12 +13,19 @@ import androidx.room.PrimaryKey
             parentColumns = ["id"],
             childColumns = ["artistId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = MusicSourceEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["sourceId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("artistId")]
+    indices = [Index("artistId"), Index("sourceId")]
 )
 data class SongEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val sourceId: Int,
     val title: String,
     val artistId: Int,
     val releaseYear: Int,

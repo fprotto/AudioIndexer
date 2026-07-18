@@ -15,12 +15,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PlaylistDao {
     @Transaction
-    @Query("SELECT * FROM playlists WHERE isAlbum = 0")
-    fun getAllPlaylists(): Flow<List<PlaylistWithSongs>>
+    @Query("SELECT * FROM playlists WHERE sourceId = :sourceId AND isAlbum = 0")
+    fun getPlaylistsBySource(sourceId: Int): Flow<List<PlaylistWithSongs>>
 
     @Transaction
-    @Query("SELECT * FROM playlists WHERE isAlbum = 1")
-    fun getAllAlbums(): Flow<List<PlaylistWithSongs>>
+    @Query("SELECT * FROM playlists WHERE sourceId = :sourceId AND isAlbum = 1")
+    fun getAlbumsBySource(sourceId: Int): Flow<List<PlaylistWithSongs>>
 
     @Transaction
     @Query("SELECT * FROM playlists WHERE id = :id")

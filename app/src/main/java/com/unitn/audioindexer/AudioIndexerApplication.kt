@@ -10,7 +10,8 @@ class AudioIndexerApplication : Application() {
         MusicRepository(
             database.artistDao(),
             database.songDao(),
-            database.playlistDao()
+            database.playlistDao(),
+            database.musicSourceDao()
         ) 
     }
 }

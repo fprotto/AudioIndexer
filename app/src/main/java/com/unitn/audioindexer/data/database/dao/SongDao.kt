@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SongDao {
     @Transaction
-    @Query("SELECT * FROM songs")
-    fun getAllSongsWithArtist(): Flow<List<SongWithArtist>>
+    @Query("SELECT * FROM songs WHERE sourceId = :sourceId")
+    fun getSongsBySource(sourceId: Int): Flow<List<SongWithArtist>>
 
     @Transaction
     @Query("SELECT * FROM songs WHERE id = :id")

@@ -10,31 +10,52 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.unitn.audioindexer.ui.SettingsViewModel
+import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
+import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 import com.unitn.audioindexer.ui.navigation.AppNavigation
 import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.unitn.audioindexer.ui.screens.Screen
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private val settingsViewModel: SettingsViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels {
+        MusicViewModelFactory((application as AudioIndexerApplication).repository)
+    }
+    private var startDestination by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Simple seeding for demo purposes
+
         val repository = (application as AudioIndexerApplication).repository
-        lifecycleScope.launch {}
+        lifecycleScope.launch {
+            val count = repository.getSourceCount()
+            if (count > 0) {
+                // Set the first source as active by default
+                val firstSource = repository.allSources.first().firstOrNull()
+                repository.setActiveSource(firstSource?.id)
+                startDestination = Screen.Tracks.route
+            } else {
+                startDestination = Screen.Setup.route
+            }
+        }
 
         enableEdgeToEdge()
         setContent {
-            AudioIndexerTheme(useDarkTheme = settingsViewModel.isDarkTheme ?: isSystemInDarkTheme()) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
+            val destination = startDestination
+            if (destination != null) {
+                AudioIndexerTheme(useDarkTheme = settingsViewModel.isDarkTheme ?: isSystemInDarkTheme()) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavigation(startDestination = destination)
+                    }
                 }
             }
         }

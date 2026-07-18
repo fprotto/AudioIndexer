@@ -1,4 +1,4 @@
-package com.unitn.audioindexer.ui
+package com.unitn.audioindexer.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +11,6 @@ import com.unitn.audioindexer.data.repository.MusicRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class TracksViewModel(private val repository: MusicRepository) : ViewModel() {
     val songs: StateFlow<List<Song>> = repository.allSongs
@@ -40,6 +39,8 @@ class MusicViewModelFactory(private val repository: MusicRepository) : ViewModel
             modelClass.isAssignableFrom(ArtistsViewModel::class.java) -> ArtistsViewModel(repository) as T
             modelClass.isAssignableFrom(AlbumsViewModel::class.java) -> AlbumsViewModel(repository) as T
             modelClass.isAssignableFrom(PlaylistsViewModel::class.java) -> PlaylistsViewModel(repository) as T
+            modelClass.isAssignableFrom(SetupViewModel::class.java) -> SetupViewModel(repository) as T
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(repository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

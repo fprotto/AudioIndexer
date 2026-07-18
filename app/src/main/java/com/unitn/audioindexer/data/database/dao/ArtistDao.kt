@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ArtistDao {
-    @Query("SELECT * FROM artists ORDER BY name ASC")
-    fun getAllArtists(): Flow<List<ArtistEntity>>
+    @Query("SELECT * FROM artists WHERE sourceId = :sourceId ORDER BY name ASC")
+    fun getArtistsBySource(sourceId: Int): Flow<List<ArtistEntity>>
 
     @Query("SELECT * FROM artists WHERE id = :id")
     suspend fun getArtistById(id: Int): ArtistEntity?

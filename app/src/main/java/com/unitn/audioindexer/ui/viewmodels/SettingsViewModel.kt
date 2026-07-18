@@ -1,4 +1,4 @@
-package com.unitn.audioindexer.ui
+package com.unitn.audioindexer.ui.viewmodels
 
 import android.app.LocaleConfig
 import android.app.LocaleManager
@@ -9,12 +9,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
+import com.unitn.audioindexer.data.repository.MusicRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
     var isDarkTheme by mutableStateOf<Boolean?>(null)
         private set
+
+    val allSources: StateFlow<List<MusicSourceEntity>> = repository.allSources
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val activeSourceId: StateFlow<Int?> = repository.activeSourceId
+
+    fun setActiveSource(id: Int) {
+        repository.setActiveSource(id)
+    }
 
     fun toggleTheme(systemInDarkTheme: Boolean) {
         isDarkTheme = !(isDarkTheme ?: systemInDarkTheme)

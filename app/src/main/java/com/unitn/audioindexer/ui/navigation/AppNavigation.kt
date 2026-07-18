@@ -13,19 +13,29 @@ import com.unitn.audioindexer.ui.screens.artists.ArtistsScreen
 import com.unitn.audioindexer.ui.screens.player.PlayerScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistsScreen
+import com.unitn.audioindexer.ui.screens.setup.SetupScreen
 import com.unitn.audioindexer.ui.screens.tracks.TracksScreen
 
 @Composable
 fun AppNavigation(
+    startDestination: String,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Tracks.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
+        composable(Screen.Setup.route) {
+            SetupScreen(onSetupComplete = {
+                navController.navigate(Screen.Tracks.route) {
+                    popUpTo(Screen.Setup.route) { inclusive = true }
+                }
+            })
+        }
+
         composable(Screen.Tracks.route) {
             TracksScreen(navController)
         }

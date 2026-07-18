@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChangeCircle
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.InvertColors
@@ -47,11 +48,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import androidx.core.os.ConfigurationCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
-import com.unitn.audioindexer.ui.SettingsViewModel
+import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
+import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 
 private fun Context.findActivity(): ComponentActivity? {
     var context = this
@@ -68,7 +72,8 @@ fun MainScreen(
     sampleState: String, // FIXME: to remove once the data layer is implemented
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel = viewModel(
-        viewModelStoreOwner = LocalContext.current.findActivity()!!
+        viewModelStoreOwner = LocalContext.current.findActivity()!!,
+        factory = MusicViewModelFactory((LocalContext.current.applicationContext as AudioIndexerApplication).repository)
     ),
     content: @Composable () -> Unit
 ) {
@@ -80,7 +85,9 @@ fun MainScreen(
             TopBar(
                 onThemeToggle = { settingsViewModel.toggleTheme(systemInDarkTheme) },
                 onLanguageChange = { lang -> settingsViewModel.setLanguage(context, lang) },
-                languages = settingsViewModel.getSupportedLanguages(context)
+                languages = settingsViewModel.getSupportedLanguages(context),
+                settingsViewModel = settingsViewModel,
+                onAddProfile = { navController.navigate(Screen.Setup.route) }
             ) 
         },
         bottomBar = { 
@@ -116,10 +123,13 @@ fun MainScreen(
 fun TopBar(
     onThemeToggle: () -> Unit,
     onLanguageChange: (String) -> Unit,
-    languages: List<Pair<String, String>>
+    languages: List<Pair<String, String>>,
+    settingsViewModel: SettingsViewModel,
+    onAddProfile: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showLanguageMenu by remember { mutableStateOf(false) }
+    var showProfileMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     TopAppBar(
@@ -204,8 +214,47 @@ fun TopBar(
                         },
                         text = { Text(stringResource(R.string.settings_switch_profile)) },
                         onClick = {
-                            /* TODO: implement */
                             showMenu = false
+                            showProfileMenu = true
+                        }
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showProfileMenu,
+                    onDismissRequest = { showProfileMenu = false }
+                ) {
+                    val sources by settingsViewModel.allSources.collectAsState()
+                    val activeId by settingsViewModel.activeSourceId.collectAsState()
+
+                    sources.forEach { source ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = source.name,
+                                    fontWeight = if (activeId == source.id) FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            onClick = {
+                                settingsViewModel.setActiveSource(source.id)
+                                showProfileMenu = false
+                            }
+                        )
+                    }
+                    
+                    androidx.compose.material3.HorizontalDivider()
+                    
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = stringResource(R.string.add_profile)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.add_profile)) },
+                        onClick = {
+                            showProfileMenu = false
+                            onAddProfile()
                         }
                     )
                 }
