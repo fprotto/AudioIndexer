@@ -1,15 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.unitn.audioindexer"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36 // Cleaned up the release block for simplicity if it's non-standard
 
     defaultConfig {
         applicationId = "com.unitn.audioindexer"
@@ -37,12 +34,13 @@ android {
     buildFeatures {
         compose = true
     }
-    androidResources {
-        generateLocaleConfig = true
-    }
 }
 
 dependencies {
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -56,8 +54,8 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.session)
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:{latest_version}")
-    implementation("androidx.navigation:navigation-compose:2.9.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation(libs.androidx.material3)
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
