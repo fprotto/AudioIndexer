@@ -8,6 +8,7 @@ class AudioIndexerApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
     val repository by lazy { 
         MusicRepository(
+            this,
             database.artistDao(),
             database.songDao(),
             database.playlistDao(),

@@ -21,6 +21,9 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE id = :id")
     suspend fun getSongById(id: Int): SongWithArtist?
 
+    @Query("SELECT * FROM songs WHERE path = :path AND sourceId = :sourceId")
+    suspend fun getSongByPath(path: String, sourceId: Int): SongEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSong(song: SongEntity): Long
 

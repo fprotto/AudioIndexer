@@ -17,6 +17,9 @@ interface ArtistDao {
     @Query("SELECT * FROM artists WHERE id = :id")
     suspend fun getArtistById(id: Int): ArtistEntity?
 
+    @Query("SELECT * FROM artists WHERE name = :name AND sourceId = :sourceId")
+    suspend fun getArtistByName(name: String, sourceId: Int): ArtistEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArtist(artist: ArtistEntity): Long
 

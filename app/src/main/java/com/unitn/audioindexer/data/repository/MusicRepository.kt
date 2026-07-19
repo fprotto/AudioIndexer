@@ -15,6 +15,13 @@ import com.unitn.audioindexer.data.database.entities.PlaylistEntity
 import com.unitn.audioindexer.data.database.entities.SongEntity
 import com.unitn.audioindexer.data.database.relations.PlaylistWithSongs
 import com.unitn.audioindexer.data.database.relations.SongWithArtist
+import com.unitn.audioindexer.data.sync.RemoteSyncWorker
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import android.content.Context
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +33,7 @@ import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MusicRepository(
+    private val context: Context,
     private val artistDao: ArtistDao,
     private val songDao: SongDao,
     private val playlistDao: PlaylistDao,
@@ -70,6 +78,8 @@ class MusicRepository(
 
     suspend fun getSourceCount(): Int = musicSourceDao.getSourceCount()
 
+    suspend fun getSourceById(id: Int): MusicSourceEntity? = musicSourceDao.getSourceById(id)
+
     suspend fun addSource(type: String, path: String, port: Int? = null, name: String) {
         val id = musicSourceDao.insertSource(MusicSourceEntity(type = type, path = path, port = port, name = name))
         if (_activeSourceId.value == null) {
@@ -94,9 +104,9 @@ class MusicRepository(
         return artistDao.insertArtist(ArtistEntity(sourceId = sourceId, name = name, propicType = "vector", propicValue = propicName))
     }
 
-    suspend fun insertSong(title: String, artistId: Long, year: Int, source: String, path: String) {
-        val sourceId = activeSourceId.value ?: return
-        songDao.insertSong(SongEntity(sourceId = sourceId, title = title, artistId = artistId.toInt(), releaseYear = year, source = source, path = path))
+    suspend fun insertSong(title: String, artistId: Long, year: Int, source: String, path: String): Long {
+        val sourceId = activeSourceId.value ?: return -1
+        return songDao.insertSong(SongEntity(sourceId = sourceId, title = title, artistId = artistId.toInt(), releaseYear = year, source = source, path = path))
     }
 
     suspend fun insertPlaylist(name: String, coverName: String, isAlbum: Boolean = false, albumArtistId: Int? = null, releaseYear: Int? = null): Long {
@@ -106,6 +116,23 @@ class MusicRepository(
 
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long) {
         playlistDao.insertPlaylistSongCrossRef(com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef(playlistId.toInt(), songId.toInt()))
+    }
+
+    fun syncRemoteSource(sourceId: Int) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncData = Data.Builder()
+            .putInt("source_id", sourceId)
+            .build()
+
+        val syncRequest = OneTimeWorkRequestBuilder<RemoteSyncWorker>()
+            .setConstraints(constraints)
+            .setInputData(syncData)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(syncRequest)
     }
 
     // Mappers

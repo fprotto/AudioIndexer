@@ -18,7 +18,9 @@ import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.unitn.audioindexer.ui.screens.Screen
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -42,6 +44,19 @@ class MainActivity : ComponentActivity() {
                 startDestination = Screen.Tracks.route
             } else {
                 startDestination = Screen.Setup.route
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.activeSourceId.collect { id ->
+                    if (id != null) {
+                        val source = repository.getSourceById(id)
+                        if (source?.type == "REMOTE") {
+                            repository.syncRemoteSource(id)
+                        }
+                    }
+                }
             }
         }
 

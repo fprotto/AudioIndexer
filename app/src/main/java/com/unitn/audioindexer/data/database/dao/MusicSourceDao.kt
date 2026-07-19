@@ -16,6 +16,9 @@ interface MusicSourceDao {
     @Query("SELECT COUNT(*) FROM music_sources")
     suspend fun getSourceCount(): Int
 
+    @Query("SELECT * FROM music_sources WHERE id = :id")
+    suspend fun getSourceById(id: Int): MusicSourceEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSource(source: MusicSourceEntity): Long
 
