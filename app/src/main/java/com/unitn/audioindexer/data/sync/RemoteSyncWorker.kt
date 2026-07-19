@@ -71,10 +71,13 @@ class RemoteSyncWorker(
             retriever.setDataSource(fullUrl, HashMap<String, String>())
             
             val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: fileName
-            val artistName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?: "Unknown Artist"
+            val artistName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) ?: "Unknown Artist"
             val albumName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
             val yearStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
             val year = yearStr?.toIntOrNull() ?: 0
+            
+            val artwork = retriever.embeddedPicture
+            val artworkPath = artwork?.let { repository.saveArtwork(it) }
 
             // 1. Handle Artist
             var artist = database.artistDao().getArtistByName(artistName, sourceId)
@@ -91,7 +94,9 @@ class RemoteSyncWorker(
                 artistId = artist.id.toLong(),
                 year = year,
                 source = "remote",
-                path = fullUrl
+                path = fullUrl,
+                coverType = if (artworkPath != null) "uri" else "vector",
+                coverValue = artworkPath ?: "MusicNote"
             )
 
             // 3. Handle Album
@@ -100,12 +105,22 @@ class RemoteSyncWorker(
                 if (album == null) {
                     val albumId = repository.insertPlaylist(
                         name = albumName,
-                        coverName = "Album",
+                        coverName = artworkPath ?: "Album",
                         isAlbum = true,
                         albumArtistId = artist.id,
                         releaseYear = year
                     )
+                    // If we have artwork, set coverType to uri
+                    if (artworkPath != null) {
+                        val newAlbum = database.playlistDao().getPlaylistById(albumId.toInt())?.playlist
+                        if (newAlbum != null) {
+                            repository.updatePlaylist(newAlbum.copy(coverType = "uri"))
+                        }
+                    }
                     album = database.playlistDao().getPlaylistById(albumId.toInt())?.playlist
+                } else if (artworkPath != null && album.coverType == "vector") {
+                    // Update album cover if it was default and we found artwork
+                    repository.updatePlaylist(album.copy(coverType = "uri", coverValue = artworkPath))
                 }
 
                 if (album != null) {

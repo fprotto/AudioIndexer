@@ -3,6 +3,7 @@ package com.unitn.audioindexer.ui.songs
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddToQueue
@@ -31,8 +32,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.ui.toImageVector
 
 @Composable
 fun SongCard(
@@ -68,12 +72,23 @@ fun SongCard(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
+                when (val cover = song.cover) {
+                    is IconSource.VectorIcon -> {
+                        Icon(
+                            imageVector = cover.toImageVector(),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    is IconSource.UriIcon -> {
+                        AsyncImage(
+                            model = cover.uri,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
         },
         trailingContent = {

@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import coil.compose.AsyncImage
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
@@ -203,12 +204,10 @@ fun AlbumItem(
                             modifier = Modifier.size(56.dp)
                         )
                         is IconSource.UriIcon -> {
-                            // TODO: Use Coil
-                            Icon(
-                                imageVector = Icons.Default.Album,
+                            AsyncImage(
+                                model = cover.uri,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(56.dp)
+                                modifier = Modifier.fillMaxSize()
                             )
                         }
                     }
@@ -275,12 +274,23 @@ fun AlbumItem(
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Album,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    when (val cover = album.cover) {
+                        is IconSource.VectorIcon -> {
+                            Icon(
+                                imageVector = cover.toImageVector(),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        is IconSource.UriIcon -> {
+                            AsyncImage(
+                                model = cover.uri,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                 }
             },
             trailingContent = {
@@ -479,12 +489,10 @@ private fun AlbumHeader(
                         modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
                     is IconSource.UriIcon -> {
-                        // TODO: Use Coil
-                        Icon(
-                            imageVector = Icons.Default.Album,
+                        AsyncImage(
+                            model = cover.uri,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }

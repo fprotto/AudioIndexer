@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.coil.compose)
 
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.core.ktx)

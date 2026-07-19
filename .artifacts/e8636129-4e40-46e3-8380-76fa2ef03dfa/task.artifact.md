@@ -1,0 +1,23 @@
+- [x] Add Coil dependency
+    - [x] Update `libs.versions.toml`
+    - [x] Update `app/build.gradle.kts`
+- [x] Update Database Layer
+    - [x] Add cover fields to `SongEntity`
+    - [x] Increment `AppDatabase` version to 3
+- [x] Update Domain Layer
+    - [x] Add cover field to `Song`
+- [x] Update Repository Layer
+    - [x] Implement `SongWithArtist.toDomain` update
+    - [x] Implement `insertSong` update
+    - [x] Add `saveArtwork` helper to `MusicRepository`
+- [x] Update Sync Logic
+    - [x] Update `RemoteSyncWorker` to extract and save embedded pictures
+    - [x] Update `RemoteSyncWorker` to handle album cover updates
+- [x] Update UI Components
+    - [x] Update `SongCard` to display cover with Coil
+    - [x] Update `AlbumItem` to display cover with Coil
+    - [x] Update `AlbumHeader` to display cover with Coil
+- [x] Verification
+    - [x] Sync project
+    - [x] Run build
+    - [x] Manual verification with remote source

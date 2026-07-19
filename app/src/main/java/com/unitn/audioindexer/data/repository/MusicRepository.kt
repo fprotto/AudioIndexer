@@ -22,6 +22,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import android.content.Context
+import android.util.Log
+import java.io.File
+import java.security.MessageDigest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,9 +107,52 @@ class MusicRepository(
         return artistDao.insertArtist(ArtistEntity(sourceId = sourceId, name = name, propicType = "vector", propicValue = propicName))
     }
 
-    suspend fun insertSong(title: String, artistId: Long, year: Int, source: String, path: String): Long {
+    suspend fun insertSong(
+        title: String,
+        artistId: Long,
+        year: Int,
+        source: String,
+        path: String,
+        coverType: String = "vector",
+        coverValue: String = "MusicNote"
+    ): Long {
         val sourceId = activeSourceId.value ?: return -1
-        return songDao.insertSong(SongEntity(sourceId = sourceId, title = title, artistId = artistId.toInt(), releaseYear = year, source = source, path = path))
+        return songDao.insertSong(
+            SongEntity(
+                sourceId = sourceId,
+                title = title,
+                artistId = artistId.toInt(),
+                releaseYear = year,
+                source = source,
+                path = path,
+                coverType = coverType,
+                coverValue = coverValue
+            )
+        )
+    }
+
+    suspend fun updatePlaylist(playlist: PlaylistEntity) {
+        playlistDao.updatePlaylist(playlist)
+    }
+
+    fun saveArtwork(artwork: ByteArray): String? {
+        return try {
+            val md = MessageDigest.getInstance("MD5")
+            val digest = md.digest(artwork)
+            val fileName = digest.joinToString("") { "%02x".format(it) } + ".jpg"
+            
+            val coversDir = File(context.filesDir, "covers")
+            if (!coversDir.exists()) coversDir.mkdirs()
+            
+            val file = File(coversDir, fileName)
+            if (!file.exists()) {
+                file.writeBytes(artwork)
+            }
+            file.absolutePath
+        } catch (e: Exception) {
+            Log.e("MusicRepository", "Error saving artwork", e)
+            null
+        }
     }
 
     suspend fun insertPlaylist(name: String, coverName: String, isAlbum: Boolean = false, albumArtistId: Int? = null, releaseYear: Int? = null): Long {
@@ -146,10 +192,16 @@ class MusicRepository(
     }
 
     private fun SongWithArtist.toDomain(): Song {
+        val iconSource = when (song.coverType) {
+            "vector" -> IconSource.VectorIcon(song.coverValue)
+            "uri" -> IconSource.UriIcon(song.coverValue)
+            else -> IconSource.VectorIcon("MusicNote")
+        }
         return Song(
             id = song.id,
             title = song.title,
             artist = artist.toDomain(),
+            cover = iconSource,
             releaseYear = song.releaseYear,
             playCount = song.playCount
         )

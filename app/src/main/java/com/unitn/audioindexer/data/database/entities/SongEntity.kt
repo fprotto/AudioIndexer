@@ -29,6 +29,8 @@ data class SongEntity(
     val title: String,
     val artistId: Int,
     val releaseYear: Int,
+    val coverType: String = "vector",
+    val coverValue: String = "MusicNote",
     val playCount: Int = 0,
     val source: String, // e.g., "local", "remote_server_1"
     val path: String // URI or File path
