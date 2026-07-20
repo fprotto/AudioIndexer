@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,13 +48,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.core.os.ConfigurationCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.ui.viewmodels.MiniPlayerViewModel
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 
@@ -73,7 +79,10 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current.findActivity()!!,
-        factory = MusicViewModelFactory((LocalContext.current.applicationContext as AudioIndexerApplication).repository)
+        factory = MusicViewModelFactory(
+            (LocalContext.current.applicationContext as AudioIndexerApplication).repository,
+            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+        )
     ),
     content: @Composable () -> Unit
 ) {
@@ -285,7 +294,18 @@ fun TopBar(
 }
 
 @Composable
-fun MiniPlayer(onClick: () -> Unit) {
+fun MiniPlayer(
+    onClick: () -> Unit,
+    viewModel: MiniPlayerViewModel = viewModel(
+        factory = MusicViewModelFactory(
+            (LocalContext.current.applicationContext as AudioIndexerApplication).repository,
+            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+        )
+    )
+) {
+    val playbackState by viewModel.state.collectAsState()
+    val song = playbackState.currentSong
+
     Box(modifier = Modifier.navigationBarsPadding()) {
         Card(
             modifier = Modifier
@@ -302,11 +322,41 @@ fun MiniPlayer(onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(stringResource(R.string.no_song_playing))
+                if (song != null) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = song.title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = song.artist.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.no_song_playing),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-                Row {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { viewModel.skipPrevious() }) {
+                        Icon(Icons.Default.SkipPrevious, contentDescription = null)
+                    }
+                    IconButton(onClick = { viewModel.togglePlayPause() }) {
+                        Icon(
+                            imageVector = if (playbackState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = { viewModel.skipNext() }) {
+                        Icon(Icons.Default.SkipNext, contentDescription = null)
                     }
                 }
             }

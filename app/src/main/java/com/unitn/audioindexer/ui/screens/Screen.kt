@@ -18,5 +18,6 @@ sealed class Screen(val route: String) {
 
     object Tracks : Screen("tracks")
     object Player : Screen("player")
+    object Queue : Screen("queue")
     object Setup : Screen("setup")
 }

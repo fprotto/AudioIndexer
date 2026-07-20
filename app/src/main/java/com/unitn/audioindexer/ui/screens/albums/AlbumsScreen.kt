@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,11 +28,13 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -80,8 +83,9 @@ fun AlbumsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
-    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository))
+    val app = context.applicationContext as AudioIndexerApplication
+    val repository = app.repository
+    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
 
     var searchQuery by remember { mutableStateOf("") }
     val allAlbums by viewModel.albums.collectAsState()
@@ -363,7 +367,9 @@ fun AlbumDetailScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val app = context.applicationContext as AudioIndexerApplication
+    val repository = app.repository
+    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
     
     var album by remember { mutableStateOf<Album?>(null) }
     
@@ -397,6 +403,8 @@ fun AlbumDetailScreen(
                     songCount = songCount,
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
+                    onPlayClick = { viewModel.playAlbum(currentAlbum) },
+                    onShuffleClick = { viewModel.playAlbum(currentAlbum, shuffle = true) },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -406,8 +414,8 @@ fun AlbumDetailScreen(
                         .weight(0.6f)
                         .fillMaxHeight()
                 ) {
-                    items(currentAlbum.songs) { song ->
-                        SongCard(song)
+                    itemsIndexed(currentAlbum.songs) { index, song ->
+                        SongCard(song, onClick = { viewModel.playSong(currentAlbum.songs, index) })
                     }
                 }
             }
@@ -421,11 +429,13 @@ fun AlbumDetailScreen(
                     AlbumHeader(
                         album = currentAlbum,
                         songCount = songCount,
-                        onNavigateBack = onNavigateBack
+                        onNavigateBack = onNavigateBack,
+                        onPlayClick = { viewModel.playAlbum(currentAlbum) },
+                        onShuffleClick = { viewModel.playAlbum(currentAlbum, shuffle = true) }
                     )
                 }
-                items(currentAlbum.songs) { song ->
-                    SongCard(song)
+                itemsIndexed(currentAlbum.songs) { index, song ->
+                    SongCard(song, onClick = { viewModel.playSong(currentAlbum.songs, index) })
                 }
             }
         }
@@ -437,6 +447,8 @@ private fun AlbumHeader(
     album: Album,
     songCount: Int,
     onNavigateBack: () -> Unit,
+    onPlayClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLandscape: Boolean = false
 ) {
@@ -543,7 +555,7 @@ private fun AlbumHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { /* TODO: play album */ },
+                    onClick = onPlayClick,
                     modifier = Modifier.weight(1f),
                     contentPadding = if (isLandscape) ButtonDefaults.TextButtonContentPadding else ButtonDefaults.ButtonWithIconContentPadding
                 ) {

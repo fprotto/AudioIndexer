@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -74,8 +75,8 @@ fun ArtistsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
-    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository))
+    val app = context.applicationContext as AudioIndexerApplication
+    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
 
     var searchQuery by remember { mutableStateOf("") }
     val allArtists by viewModel.artists.collectAsState()
@@ -220,7 +221,9 @@ fun ArtistDetailScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
+    val app = context.applicationContext as AudioIndexerApplication
+    val repository = app.repository
+    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
     
     var artist by remember { mutableStateOf<Artist?>(null) }
     var artistAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }
@@ -295,8 +298,8 @@ fun ArtistDetailScreen(
                     )
                 }
 
-                items(topSongs) { song ->
-                    SongCard(song = song)
+                itemsIndexed(topSongs) { index, song ->
+                    SongCard(song = song, onClick = { viewModel.playSong(topSongs, index) })
                 }
             }
 

@@ -58,13 +58,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
+import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.data.components.IconSource
+import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.ui.toImageVector
+import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
+import com.unitn.audioindexer.ui.viewmodels.PlayerUiState
+import com.unitn.audioindexer.ui.viewmodels.PlayerViewModel
 
 @Composable
 fun PlayerScreen(
-    viewModel: PlayerViewModel = viewModel(),
+    viewModel: PlayerViewModel = viewModel(
+        factory = MusicViewModelFactory(
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).repository,
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+        )
+    ),
     onBackClick: () -> Unit = {},
     onQueueClick: () -> Unit = {},
 ) {
@@ -91,6 +104,7 @@ fun PlayerScreen(
                         .padding(end = 16.dp)
                 ) {
                     AlbumArt(
+                        song = uiState.currentSong,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
@@ -153,6 +167,7 @@ fun PlayerScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 AlbumArt(
+                    song = uiState.currentSong,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
@@ -246,6 +261,7 @@ private fun PlayerTopBar(
 
 @Composable
 private fun AlbumArt(
+    song: Song?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -254,12 +270,28 @@ private fun AlbumArt(
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            Icons.Default.MusicNote,
-            contentDescription = null,
-            modifier = Modifier.size(120.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
+        if (song != null) {
+            when (val cover = song.cover) {
+                is IconSource.VectorIcon -> Icon(
+                    imageVector = cover.toImageVector(),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                is IconSource.UriIcon -> AsyncImage(
+                    model = cover.uri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        } else {
+            Icon(
+                Icons.Default.MusicNote,
+                contentDescription = null,
+                modifier = Modifier.size(120.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+        }
     }
 }
 

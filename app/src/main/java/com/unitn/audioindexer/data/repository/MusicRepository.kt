@@ -202,6 +202,7 @@ class MusicRepository(
             title = song.title,
             artist = artist.toDomain(),
             cover = iconSource,
+            path = song.path,
             releaseYear = song.releaseYear,
             playCount = song.playCount
         )

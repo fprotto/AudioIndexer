@@ -53,12 +53,11 @@ fun TracksScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
-    val viewModel: TracksViewModel = viewModel(factory = MusicViewModelFactory(repository))
+    val app = context.applicationContext as AudioIndexerApplication
+    val viewModel: TracksViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
     
     var searchQuery by remember { mutableStateOf("") }
     var sortOrder by remember { mutableStateOf(SongSortOrder.TITLE) }
-    var isShuffled by remember { mutableStateOf(false) }
 
     val allSongs by viewModel.songs.collectAsState()
 
@@ -86,13 +85,18 @@ fun TracksScreen(
             TracksControlBar(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
-                onShuffleClick = { isShuffled = !isShuffled },
+                onShuffleClick = { 
+                    if (sortedSongs.isNotEmpty()) {
+                        viewModel.playSong(sortedSongs.shuffled(), 0)
+                    }
+                },
                 sortOrder = sortOrder,
                 onSortOrderChange = { sortOrder = it }
             )
             
             TracksSection(
-                sortedSongs
+                sortedSongs,
+                onSongClick = { index -> viewModel.playSong(sortedSongs, index) }
             )
         }
     }
@@ -211,11 +215,12 @@ fun TracksControlBar(
 
 @Composable
 fun TracksSection(
-    songs: List<Song>
+    songs: List<Song>,
+    onSongClick: (Int) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        songs.forEach { song ->
-            SongCard(song)
+        songs.forEachIndexed { index, song ->
+            SongCard(song, onClick = { onSongClick(index) })
         }
     }
 }

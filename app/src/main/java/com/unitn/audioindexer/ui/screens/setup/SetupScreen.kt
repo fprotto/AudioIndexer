@@ -46,8 +46,8 @@ fun SetupScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as AudioIndexerApplication).repository
-    val viewModel: SetupViewModel = viewModel(factory = MusicViewModelFactory(repository))
+    val app = context.applicationContext as AudioIndexerApplication
+    val viewModel: SetupViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
 
     var showRemoteDialog by remember { mutableStateOf(false) }
 

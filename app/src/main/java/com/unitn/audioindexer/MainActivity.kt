@@ -27,7 +27,8 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels {
-        MusicViewModelFactory((application as AudioIndexerApplication).repository)
+        val app = application as AudioIndexerApplication
+        MusicViewModelFactory(app.repository, app.musicController)
     }
     private var startDestination by mutableStateOf<String?>(null)
 
