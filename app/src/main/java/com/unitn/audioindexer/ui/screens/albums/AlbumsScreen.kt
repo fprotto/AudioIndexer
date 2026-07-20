@@ -404,7 +404,6 @@ fun AlbumDetailScreen(
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
                     onPlayClick = { viewModel.playAlbum(currentAlbum) },
-                    onShuffleClick = { viewModel.playAlbum(currentAlbum, shuffle = true) },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -431,7 +430,6 @@ fun AlbumDetailScreen(
                         songCount = songCount,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playAlbum(currentAlbum) },
-                        onShuffleClick = { viewModel.playAlbum(currentAlbum, shuffle = true) }
                     )
                 }
                 itemsIndexed(currentAlbum.songs) { index, song ->
@@ -448,7 +446,6 @@ private fun AlbumHeader(
     songCount: Int,
     onNavigateBack: () -> Unit,
     onPlayClick: () -> Unit,
-    onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLandscape: Boolean = false
 ) {
