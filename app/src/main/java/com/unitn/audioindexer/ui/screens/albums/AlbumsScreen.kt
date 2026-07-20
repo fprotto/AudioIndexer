@@ -17,24 +17,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddToQueue
-import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -99,7 +95,7 @@ fun AlbumsScreen(
 
     MainScreen(
         navController = navController,
-        sampleState = "Albums"
+        state = "Albums"
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             AlbumsControlBar(
@@ -110,6 +106,7 @@ fun AlbumsScreen(
             AlbumsSection(
                 filteredAlbums,
                 navController,
+                onAddToQueue = { viewModel.addAlbumToQueue(it) },
                 modifier = modifier
             )
         }
@@ -164,6 +161,7 @@ fun AlbumsControlBar(
 fun AlbumsSection(
     albums: List<Album>,
     navController: NavController,
+    onAddToQueue: (Album) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -171,7 +169,8 @@ fun AlbumsSection(
             AlbumItem(
                 album,
                 navController,
-                modifier = modifier
+                modifier = modifier,
+                onAddToQueue = { onAddToQueue(album) }
             )
         }
     }
@@ -182,7 +181,8 @@ fun AlbumItem(
     album: Album,
     navController: NavController,
     modifier: Modifier = Modifier,
-    showAsCard: Boolean = false
+    showAsCard: Boolean = false,
+    onAddToQueue: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -245,7 +245,8 @@ fun AlbumItem(
                     AlbumMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false },
-                        onMoreOptionsClick = { showMenu = true }
+                        onMoreOptionsClick = { showMenu = true },
+                        onAddToQueue = onAddToQueue
                     )
                 }
             }
@@ -301,7 +302,8 @@ fun AlbumItem(
                 AlbumMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
-                    onMoreOptionsClick = { showMenu = true }
+                    onMoreOptionsClick = { showMenu = true },
+                    onAddToQueue = onAddToQueue
                 )
             },
             modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Album.createRoute(album.id)) })
@@ -313,7 +315,8 @@ fun AlbumItem(
 private fun AlbumMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onMoreOptionsClick: () -> Unit
+    onMoreOptionsClick: () -> Unit,
+    onAddToQueue: () -> Unit = {}
 ) {
     Box {
         IconButton(onClick = onMoreOptionsClick) {
@@ -338,7 +341,7 @@ private fun AlbumMenu(
                 text = { Text(stringResource(R.string.menu_add_to_queue)) },
                 onClick = {
                     onDismissRequest()
-                    // TODO: implement add to queue
+                    onAddToQueue()
                 }
             )
             DropdownMenuItem(
@@ -404,6 +407,7 @@ fun AlbumDetailScreen(
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
                     onPlayClick = { viewModel.playAlbum(currentAlbum) },
+                    onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -414,7 +418,11 @@ fun AlbumDetailScreen(
                         .fillMaxHeight()
                 ) {
                     itemsIndexed(currentAlbum.songs) { index, song ->
-                        SongCard(song, onClick = { viewModel.playSong(currentAlbum.songs, index) })
+                        SongCard(
+                            song, 
+                            onClick = { viewModel.playSong(currentAlbum.songs, index) },
+                            onAddToQueue = { viewModel.addToQueue(song) }
+                        )
                     }
                 }
             }
@@ -430,10 +438,15 @@ fun AlbumDetailScreen(
                         songCount = songCount,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playAlbum(currentAlbum) },
+                        onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) }
                     )
                 }
                 itemsIndexed(currentAlbum.songs) { index, song ->
-                    SongCard(song, onClick = { viewModel.playSong(currentAlbum.songs, index) })
+                    SongCard(
+                        song, 
+                        onClick = { viewModel.playSong(currentAlbum.songs, index) },
+                        onAddToQueue = { viewModel.addToQueue(song) }
+                    )
                 }
             }
         }
@@ -444,9 +457,10 @@ fun AlbumDetailScreen(
 private fun AlbumHeader(
     album: Album,
     songCount: Int,
+    modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
     onPlayClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    onAddToQueue: () -> Unit = {},
     isLandscape: Boolean = false
 ) {
     Box(
@@ -574,7 +588,8 @@ private fun AlbumHeader(
                 AlbumMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
-                    onMoreOptionsClick = { showMenu = true }
+                    onMoreOptionsClick = { showMenu = true },
+                    onAddToQueue = onAddToQueue
                 )
             }
         }

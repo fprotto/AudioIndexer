@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -97,7 +96,7 @@ fun PlaylistsScreen(
 
     MainScreen(
         navController = navController,
-        sampleState = "Playlists"
+        state = "Playlists"
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             PlaylistsControlBar(
@@ -316,6 +315,7 @@ fun PlaylistDetailScreen(
                     isLandscape = true,
                     onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
                     onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
+                    onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -326,7 +326,11 @@ fun PlaylistDetailScreen(
                         .fillMaxHeight()
                 ) {
                     itemsIndexed(currentPlaylist.songs) { index, song ->
-                        SongCard(song, onClick = { viewModel.playSong(currentPlaylist.songs, index) })
+                        SongCard(
+                            song, 
+                            onClick = { viewModel.playSong(currentPlaylist.songs, index) },
+                            onAddToQueue = { viewModel.addToQueue(song) }
+                        )
                     }
                 }
             }
@@ -342,11 +346,16 @@ fun PlaylistDetailScreen(
                         songCount = songCount,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
-                        onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) }
+                        onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
+                        onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) }
                     )
                 }
                 itemsIndexed(currentPlaylist.songs) { index, song ->
-                    SongCard(song, onClick = { viewModel.playSong(currentPlaylist.songs, index) })
+                    SongCard(
+                        song, 
+                        onClick = { viewModel.playSong(currentPlaylist.songs, index) },
+                        onAddToQueue = { viewModel.addToQueue(song) }
+                    )
                 }
             }
         }
@@ -361,6 +370,7 @@ private fun PlaylistHeader(
     onPlayClick: () -> Unit,
     onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onAddToQueue: () -> Unit = {},
     isLandscape: Boolean = false
 ) {
     Box(
@@ -520,7 +530,10 @@ private fun PlaylistHeader(
                                 )
                             },
                             text = { Text(stringResource(R.string.menu_add_to_queue)) },
-                            onClick = { showMenu = false /* TODO: implement */ }
+                            onClick = {
+                                showMenu = false
+                                onAddToQueue()
+                            }
                         )
                         DropdownMenuItem(
                             leadingIcon = {

@@ -24,6 +24,10 @@ class TracksViewModel(
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
     }
+
+    fun addToQueue(song: Song) {
+        musicController.addSongsToQueue(listOf(song))
+    }
 }
 
 class ArtistsViewModel(
@@ -35,6 +39,14 @@ class ArtistsViewModel(
 
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
+    }
+
+    fun addToQueue(song: Song) {
+        musicController.addSongsToQueue(listOf(song))
+    }
+
+    fun addAlbumToQueue(album: Album) {
+        musicController.addSongsToQueue(album.songs)
     }
 }
 
@@ -52,6 +64,14 @@ class AlbumsViewModel(
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
     }
+
+    fun addToQueue(song: Song) {
+        musicController.addSongsToQueue(listOf(song))
+    }
+
+    fun addAlbumToQueue(album: Album) {
+        musicController.addSongsToQueue(album.songs)
+    }
 }
 
 class PlaylistsViewModel(
@@ -67,6 +87,14 @@ class PlaylistsViewModel(
 
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
+    }
+
+    fun addToQueue(song: Song) {
+        musicController.addSongsToQueue(listOf(song))
+    }
+
+    fun addPlaylistToQueue(playlist: Playlist) {
+        musicController.addSongsToQueue(playlist.songs)
     }
 }
 

@@ -89,7 +89,7 @@ fun ArtistsScreen(
 
     MainScreen(
         navController = navController,
-        sampleState = "Artists"
+        state = "Artists"
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ArtistsControlBar(
@@ -202,13 +202,6 @@ fun ArtistItem(
                 )
             }
         },
-        trailingContent = {
-            ArtistMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-                onMoreOptionsClick = { showMenu = true }
-            )
-        },
         modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Artist.createRoute(artist.id)) })
     )
 }
@@ -299,7 +292,11 @@ fun ArtistDetailScreen(
                 }
 
                 itemsIndexed(topSongs) { index, song ->
-                    SongCard(song = song, onClick = { viewModel.playSong(topSongs, index) })
+                    SongCard(
+                        song = song, 
+                        onClick = { viewModel.playSong(topSongs, index) },
+                        onAddToQueue = { viewModel.addToQueue(song) }
+                    )
                 }
             }
 
@@ -329,7 +326,8 @@ fun ArtistDetailScreen(
                                 AlbumItem(
                                     album = album,
                                     navController = navController,
-                                    showAsCard = true
+                                    showAsCard = true,
+                                    onAddToQueue = { viewModel.addAlbumToQueue(album) }
                                 )
                             }
                         }
@@ -384,55 +382,5 @@ fun ArtistHeader(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
         )
-    }
-}
-
-@Composable
-private fun ArtistMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    onMoreOptionsClick: () -> Unit
-) {
-    Box {
-        IconButton(onClick = onMoreOptionsClick) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = stringResource(R.string.more_options),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = onDismissRequest
-        ) {
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.AddToQueue,
-                        contentDescription = stringResource(R.string.menu_add_to_queue),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                text = { Text(stringResource(R.string.menu_add_to_queue)) },
-                onClick = {
-                    onDismissRequest()
-                    // TODO: implement add to queue
-                }
-            )
-            DropdownMenuItem(
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.PlaylistAddCircle,
-                        contentDescription = stringResource(R.string.menu_add_to_playlist),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                text = { Text(stringResource(R.string.menu_add_to_playlist)) },
-                onClick = {
-                    onDismissRequest()
-                    // TODO: implement add to playlist
-                }
-            )
-        }
     }
 }

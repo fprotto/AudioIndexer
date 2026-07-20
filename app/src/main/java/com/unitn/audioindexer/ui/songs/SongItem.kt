@@ -41,10 +41,10 @@ import com.unitn.audioindexer.ui.toImageVector
 @Composable
 fun SongCard(
     song: Song,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onAddToQueue: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val
 
     ListItem(
         headlineContent = {
@@ -116,7 +116,7 @@ fun SongCard(
                         text = { Text(stringResource(R.string.menu_add_to_queue)) },
                         onClick = {
                             showMenu = false
-                            // TODO: implement add to queue
+                            onAddToQueue()
                         }
                     )
                     DropdownMenuItem(

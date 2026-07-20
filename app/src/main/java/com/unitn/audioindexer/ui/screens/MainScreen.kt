@@ -75,7 +75,7 @@ private fun Context.findActivity(): ComponentActivity? {
 @Composable
 fun MainScreen(
     navController: NavController,
-    sampleState: String, // FIXME: to remove once the data layer is implemented
+    state: String,
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current.findActivity()!!,
@@ -113,8 +113,8 @@ fun MainScreen(
         ) {
             item { 
                 QuickNavigateToSection(
-                    navController = navController, 
-                    currentSection = sampleState
+                    navController = navController,
+                    currentSection = state
                 ) 
             }
             item {

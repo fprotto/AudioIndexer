@@ -227,6 +227,12 @@ class MusicController(
         controller?.moveMediaItem(fromIndex, toIndex)
     }
 
+    fun addSongsToQueue(songs: List<Song>) {
+        val player = controller ?: return
+        val mediaItems = songs.map { it.toMediaItem() }
+        player.addMediaItems(mediaItems)
+    }
+
     private fun Song.toMediaItem(): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(title)
@@ -257,7 +263,7 @@ class MusicController(
         val coverType = extras?.getString("coverType")
         val coverValue = extras?.getString("coverValue") ?: ""
         val cover = if (coverType == "uri") IconSource.UriIcon(coverValue) 
-                    else IconSource.VectorIcon(if (coverValue.isEmpty()) "MusicNote" else coverValue)
+                    else IconSource.VectorIcon(coverValue.ifEmpty { "MusicNote" })
         
         return Song(
             id = mediaId.toInt(),

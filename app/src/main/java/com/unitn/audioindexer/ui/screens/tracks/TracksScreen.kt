@@ -78,7 +78,7 @@ fun TracksScreen(
 
     MainScreen(
         navController = navController,
-        sampleState = "Tracks",
+        state = "Tracks",
         modifier = modifier
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -96,7 +96,8 @@ fun TracksScreen(
             
             TracksSection(
                 sortedSongs,
-                onSongClick = { index -> viewModel.playSong(sortedSongs, index) }
+                onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
+                onAddToQueue = { song -> viewModel.addToQueue(song) }
             )
         }
     }
@@ -216,11 +217,16 @@ fun TracksControlBar(
 @Composable
 fun TracksSection(
     songs: List<Song>,
-    onSongClick: (Int) -> Unit
+    onSongClick: (Int) -> Unit,
+    onAddToQueue: (Song) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         songs.forEachIndexed { index, song ->
-            SongCard(song, onClick = { onSongClick(index) })
+            SongCard(
+                song, 
+                onClick = { onSongClick(index) },
+                onAddToQueue = { onAddToQueue(song) }
+            )
         }
     }
 }
