@@ -65,6 +65,9 @@ import com.unitn.audioindexer.ui.screens.MiniPlayer
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.toImageVector
 import com.unitn.audioindexer.ui.songs.SongCard
+import com.unitn.audioindexer.ui.viewmodels.PlaylistsViewModel
+import com.unitn.audioindexer.ui.components.AddToPlaylistDialog
+import com.unitn.audioindexer.ui.components.CreatePlaylistDialog
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -86,11 +89,56 @@ fun AlbumsScreen(
     var searchQuery by remember { mutableStateOf("") }
     val allAlbums by viewModel.albums.collectAsState()
 
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val allPlaylists by playlistViewModel.playlists.collectAsState()
+
+    var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
+    var showAddToPlaylistDialogForAlbum by remember { mutableStateOf<Album?>(null) }
+    var showCreateDialogForAdd by remember { mutableStateOf(false) }
+
     val filteredAlbums = remember(searchQuery, allAlbums) {
         allAlbums.filter {
             it.name.contains(searchQuery, ignoreCase = true) ||
                     it.artist.name.contains(searchQuery, ignoreCase = true)
         }
+    }
+
+    if (showAddToPlaylistDialogForSong != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialogForSong = null },
+            onPlaylistSelected = { playlist ->
+                viewModel.addSongToPlaylist(playlist.id, showAddToPlaylistDialogForSong!!.id)
+                showAddToPlaylistDialogForSong = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showAddToPlaylistDialogForAlbum != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialogForAlbum = null },
+            onPlaylistSelected = { playlist ->
+                viewModel.addSongsToPlaylist(playlist.id, showAddToPlaylistDialogForAlbum!!.songs)
+                showAddToPlaylistDialogForAlbum = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showCreateDialogForAdd) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialogForAdd = false },
+            onConfirm = { name ->
+                playlistViewModel.createPlaylist(name)
+                showCreateDialogForAdd = false
+            }
+        )
     }
 
     MainScreen(
@@ -107,6 +155,7 @@ fun AlbumsScreen(
                 filteredAlbums,
                 navController,
                 onAddToQueue = { viewModel.addAlbumToQueue(it) },
+                onAddToPlaylist = { showAddToPlaylistDialogForAlbum = it },
                 modifier = modifier
             )
         }
@@ -162,6 +211,7 @@ fun AlbumsSection(
     albums: List<Album>,
     navController: NavController,
     onAddToQueue: (Album) -> Unit,
+    onAddToPlaylist: (Album) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -170,7 +220,8 @@ fun AlbumsSection(
                 album,
                 navController,
                 modifier = modifier,
-                onAddToQueue = { onAddToQueue(album) }
+                onAddToQueue = { onAddToQueue(album) },
+                onAddToPlaylist = { onAddToPlaylist(album) }
             )
         }
     }
@@ -182,7 +233,8 @@ fun AlbumItem(
     navController: NavController,
     modifier: Modifier = Modifier,
     showAsCard: Boolean = false,
-    onAddToQueue: () -> Unit = {}
+    onAddToQueue: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -246,7 +298,8 @@ fun AlbumItem(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false },
                         onMoreOptionsClick = { showMenu = true },
-                        onAddToQueue = onAddToQueue
+                        onAddToQueue = onAddToQueue,
+                        onAddToPlaylist = onAddToPlaylist
                     )
                 }
             }
@@ -303,7 +356,8 @@ fun AlbumItem(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                     onMoreOptionsClick = { showMenu = true },
-                    onAddToQueue = onAddToQueue
+                    onAddToQueue = onAddToQueue,
+                    onAddToPlaylist = onAddToPlaylist
                 )
             },
             modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Album.createRoute(album.id)) })
@@ -316,7 +370,8 @@ private fun AlbumMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onMoreOptionsClick: () -> Unit,
-    onAddToQueue: () -> Unit = {}
+    onAddToQueue: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {}
 ) {
     Box {
         IconButton(onClick = onMoreOptionsClick) {
@@ -355,7 +410,7 @@ private fun AlbumMenu(
                 text = { Text(stringResource(R.string.menu_add_to_playlist)) },
                 onClick = {
                     onDismissRequest()
-                    // TODO: implement add to playlist
+                    onAddToPlaylist()
                 }
             )
         }
@@ -373,6 +428,51 @@ fun AlbumDetailScreen(
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
     val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
+
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val allPlaylists by playlistViewModel.playlists.collectAsState()
+
+    var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
+    var showAddToPlaylistDialogForAlbum by remember { mutableStateOf<Album?>(null) }
+    var showCreateDialogForAdd by remember { mutableStateOf(false) }
+
+    if (showAddToPlaylistDialogForSong != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialogForSong = null },
+            onPlaylistSelected = { playlist ->
+                viewModel.addSongToPlaylist(playlist.id, showAddToPlaylistDialogForSong!!.id)
+                showAddToPlaylistDialogForSong = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showAddToPlaylistDialogForAlbum != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialogForAlbum = null },
+            onPlaylistSelected = { playlist ->
+                viewModel.addSongsToPlaylist(playlist.id, showAddToPlaylistDialogForAlbum!!.songs)
+                showAddToPlaylistDialogForAlbum = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showCreateDialogForAdd) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialogForAdd = false },
+            onConfirm = { name ->
+                playlistViewModel.createPlaylist(name)
+                showCreateDialogForAdd = false
+            }
+        )
+    }
     
     var album by remember { mutableStateOf<Album?>(null) }
     
@@ -408,6 +508,7 @@ fun AlbumDetailScreen(
                     isLandscape = true,
                     onPlayClick = { viewModel.playAlbum(currentAlbum) },
                     onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) },
+                    onAddToPlaylistClick = { showAddToPlaylistDialogForAlbum = currentAlbum },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -421,7 +522,8 @@ fun AlbumDetailScreen(
                         SongCard(
                             song, 
                             onClick = { viewModel.playSong(currentAlbum.songs, index) },
-                            onAddToQueue = { viewModel.addToQueue(song) }
+                            onAddToQueue = { viewModel.addToQueue(song) },
+                            onAddToPlaylist = { showAddToPlaylistDialogForSong = song }
                         )
                     }
                 }
@@ -438,14 +540,16 @@ fun AlbumDetailScreen(
                         songCount = songCount,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playAlbum(currentAlbum) },
-                        onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) }
+                        onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) },
+                        onAddToPlaylistClick = { showAddToPlaylistDialogForAlbum = currentAlbum }
                     )
                 }
                 itemsIndexed(currentAlbum.songs) { index, song ->
                     SongCard(
                         song, 
                         onClick = { viewModel.playSong(currentAlbum.songs, index) },
-                        onAddToQueue = { viewModel.addToQueue(song) }
+                        onAddToQueue = { viewModel.addToQueue(song) },
+                        onAddToPlaylist = { showAddToPlaylistDialogForSong = song }
                     )
                 }
             }
@@ -461,6 +565,7 @@ private fun AlbumHeader(
     onNavigateBack: () -> Unit,
     onPlayClick: () -> Unit,
     onAddToQueue: () -> Unit = {},
+    onAddToPlaylistClick: () -> Unit = {},
     isLandscape: Boolean = false
 ) {
     Box(
@@ -589,7 +694,8 @@ private fun AlbumHeader(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                     onMoreOptionsClick = { showMenu = true },
-                    onAddToQueue = onAddToQueue
+                    onAddToQueue = onAddToQueue,
+                    onAddToPlaylist = onAddToPlaylistClick
                 )
             }
         }

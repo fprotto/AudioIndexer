@@ -42,6 +42,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.TracksViewModel
+import com.unitn.audioindexer.ui.viewmodels.PlaylistsViewModel
+import com.unitn.audioindexer.ui.components.AddToPlaylistDialog
+import com.unitn.audioindexer.ui.components.CreatePlaylistDialog
 
 enum class SongSortOrder {
     TITLE, ARTIST, YEAR
@@ -60,6 +63,12 @@ fun TracksScreen(
     var sortOrder by remember { mutableStateOf(SongSortOrder.TITLE) }
 
     val allSongs by viewModel.songs.collectAsState()
+    
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val allPlaylists by playlistViewModel.playlists.collectAsState()
+
+    var showAddToPlaylistDialog by remember { mutableStateOf<Song?>(null) }
+    var showCreateDialogForAdd by remember { mutableStateOf(false) }
 
     val filteredSongs = remember(searchQuery, allSongs) {
         allSongs.filter {
@@ -74,6 +83,30 @@ fun TracksScreen(
             SongSortOrder.ARTIST -> filteredSongs.sortedBy { it.artist.name }
             SongSortOrder.YEAR -> filteredSongs.sortedByDescending { it.releaseYear }
         }
+    }
+
+    if (showAddToPlaylistDialog != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialog = null },
+            onPlaylistSelected = { playlist ->
+                viewModel.addSongToPlaylist(playlist.id, showAddToPlaylistDialog!!.id)
+                showAddToPlaylistDialog = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showCreateDialogForAdd) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialogForAdd = false },
+            onConfirm = { name ->
+                playlistViewModel.createPlaylist(name)
+                showCreateDialogForAdd = false
+            }
+        )
     }
 
     MainScreen(
@@ -97,7 +130,8 @@ fun TracksScreen(
             TracksSection(
                 sortedSongs,
                 onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
-                onAddToQueue = { song -> viewModel.addToQueue(song) }
+                onAddToQueue = { song -> viewModel.addToQueue(song) },
+                onAddToPlaylist = { song -> showAddToPlaylistDialog = song }
             )
         }
     }
@@ -218,14 +252,16 @@ fun TracksControlBar(
 fun TracksSection(
     songs: List<Song>,
     onSongClick: (Int) -> Unit,
-    onAddToQueue: (Song) -> Unit
+    onAddToQueue: (Song) -> Unit,
+    onAddToPlaylist: (Song) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         songs.forEachIndexed { index, song ->
             SongCard(
                 song, 
                 onClick = { onSongClick(index) },
-                onAddToQueue = { onAddToQueue(song) }
+                onAddToQueue = { onAddToQueue(song) },
+                onAddToPlaylist = { onAddToPlaylist(song) }
             )
         }
     }

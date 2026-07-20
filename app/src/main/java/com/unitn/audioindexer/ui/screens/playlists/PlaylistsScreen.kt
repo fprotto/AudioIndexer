@@ -73,8 +73,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
+import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.PlaylistsViewModel
+import com.unitn.audioindexer.ui.components.CreatePlaylistDialog
+import com.unitn.audioindexer.ui.components.AddToPlaylistDialog
+import com.unitn.audioindexer.ui.components.EditPlaylistDialog
+import com.unitn.audioindexer.ui.components.DeletePlaylistConfirmationDialog
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Check
+
+enum class PlaylistSongSortOrder {
+    CUSTOM, TITLE, ARTIST, YEAR
+}
 
 @Composable
 fun PlaylistsScreen(
@@ -88,10 +99,22 @@ fun PlaylistsScreen(
     var searchQuery by remember { mutableStateOf("") }
     val allPlaylists by viewModel.playlists.collectAsState()
 
+    var showCreateDialog by remember { mutableStateOf(false) }
+
     val filteredPlaylists = remember(searchQuery, allPlaylists) {
         allPlaylists.filter {
             it.name.contains(searchQuery, ignoreCase = true)
         }
+    }
+
+    if (showCreateDialog) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialog = false },
+            onConfirm = { name ->
+                viewModel.createPlaylist(name)
+                showCreateDialog = false
+            }
+        )
     }
 
     MainScreen(
@@ -101,7 +124,8 @@ fun PlaylistsScreen(
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             PlaylistsControlBar(
                 searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it }
+                onSearchQueryChange = { searchQuery = it },
+                onNewPlaylistClick = { showCreateDialog = true }
             )
 
             PlaylistSection(
@@ -117,7 +141,8 @@ fun PlaylistsScreen(
 @Composable
 fun PlaylistsControlBar(
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    onNewPlaylistClick: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -156,7 +181,7 @@ fun PlaylistsControlBar(
             )
         )
 
-        IconButton(onClick = { /* TODO: implement playlist creation */ }, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = onNewPlaylistClick, modifier = Modifier.size(40.dp)) {
             Icon(
                 Icons.AutoMirrored.Filled.PlaylistAdd,
                 contentDescription = stringResource(R.string.new_playlist),
@@ -282,8 +307,16 @@ fun PlaylistDetailScreen(
     val viewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
     
     var playlist by remember { mutableStateOf<Playlist?>(null) }
+    val allPlaylists by viewModel.playlists.collectAsState()
+
+    var showAddToPlaylistDialog by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
+    var showCreateDialogForAdd by remember { mutableStateOf(false) }
+
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showAddToPlaylistDialogForAll by remember { mutableStateOf(false) }
     
-    LaunchedEffect(id) {
+    LaunchedEffect(id, allPlaylists) {
         if (id != null) {
             playlist = repository.getPlaylistById(id)
         }
@@ -291,7 +324,78 @@ fun PlaylistDetailScreen(
 
     val currentPlaylist = playlist ?: return
 
-    val songCount = currentPlaylist.songs.size
+    var sortOrder by remember { mutableStateOf(PlaylistSongSortOrder.CUSTOM) }
+
+    val sortedSongs = remember(sortOrder, currentPlaylist.songs) {
+        when (sortOrder) {
+            PlaylistSongSortOrder.CUSTOM -> currentPlaylist.songs // already sortedBy { it.playlistOrder } in repo
+            PlaylistSongSortOrder.TITLE -> currentPlaylist.songs.sortedBy { it.title }
+            PlaylistSongSortOrder.ARTIST -> currentPlaylist.songs.sortedBy { it.artist.name }
+            PlaylistSongSortOrder.YEAR -> currentPlaylist.songs.sortedByDescending { it.releaseYear }
+        }
+    }
+
+    if (showAddToPlaylistDialog != null) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialog = null },
+            onPlaylistSelected = { targetPlaylist ->
+                viewModel.addSongToPlaylist(targetPlaylist.id, showAddToPlaylistDialog!!.id)
+                showAddToPlaylistDialog = null
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
+    if (showCreateDialogForAdd) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialogForAdd = false },
+            onConfirm = { name ->
+                viewModel.createPlaylist(name)
+                showCreateDialogForAdd = false
+            }
+        )
+    }
+
+    if (showRenameDialog) {
+        EditPlaylistDialog(
+            initialName = currentPlaylist.name,
+            onDismissRequest = { showRenameDialog = false },
+            onConfirm = { newName ->
+                viewModel.renamePlaylist(currentPlaylist.id, newName)
+                showRenameDialog = false
+            }
+        )
+    }
+
+    if (showDeleteConfirmation) {
+        DeletePlaylistConfirmationDialog(
+            playlistName = currentPlaylist.name,
+            onDismissRequest = { showDeleteConfirmation = false },
+            onConfirm = {
+                viewModel.deletePlaylist(currentPlaylist.id)
+                showDeleteConfirmation = false
+                onNavigateBack()
+            }
+        )
+    }
+
+    if (showAddToPlaylistDialogForAll) {
+        AddToPlaylistDialog(
+            playlists = allPlaylists,
+            onDismissRequest = { showAddToPlaylistDialogForAll = false },
+            onPlaylistSelected = { targetPlaylist ->
+                viewModel.addSongsToPlaylist(targetPlaylist.id, currentPlaylist.songs)
+                showAddToPlaylistDialogForAll = false
+            },
+            onCreateNewPlaylist = {
+                showCreateDialogForAdd = true
+            }
+        )
+    }
+
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -310,12 +414,17 @@ fun PlaylistDetailScreen(
             ) {
                 PlaylistHeader(
                     playlist = currentPlaylist,
-                    songCount = songCount,
+                    songCount = currentPlaylist.songs.size,
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
                     onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
                     onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
                     onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) },
+                    onRenameClick = { showRenameDialog = true },
+                    onDeleteClick = { showDeleteConfirmation = true },
+                    onAddToPlaylistClick = { showAddToPlaylistDialogForAll = true },
+                    sortOrder = sortOrder,
+                    onSortOrderChange = { sortOrder = it },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -325,11 +434,13 @@ fun PlaylistDetailScreen(
                         .weight(0.6f)
                         .fillMaxHeight()
                 ) {
-                    itemsIndexed(currentPlaylist.songs) { index, song ->
+                    itemsIndexed(sortedSongs) { index, song ->
                         SongCard(
                             song, 
-                            onClick = { viewModel.playSong(currentPlaylist.songs, index) },
-                            onAddToQueue = { viewModel.addToQueue(song) }
+                            onClick = { viewModel.playSong(sortedSongs, index) },
+                            onAddToQueue = { viewModel.addToQueue(song) },
+                            onAddToPlaylist = { showAddToPlaylistDialog = song },
+                            onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) }
                         )
                     }
                 }
@@ -343,18 +454,25 @@ fun PlaylistDetailScreen(
                 item {
                     PlaylistHeader(
                         playlist = currentPlaylist,
-                        songCount = songCount,
+                        songCount = currentPlaylist.songs.size,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
                         onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
-                        onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) }
+                        onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) },
+                        onRenameClick = { showRenameDialog = true },
+                        onDeleteClick = { showDeleteConfirmation = true },
+                        onAddToPlaylistClick = { showAddToPlaylistDialogForAll = true },
+                        sortOrder = sortOrder,
+                        onSortOrderChange = { sortOrder = it }
                     )
                 }
-                itemsIndexed(currentPlaylist.songs) { index, song ->
+                itemsIndexed(sortedSongs) { index, song ->
                     SongCard(
                         song, 
-                        onClick = { viewModel.playSong(currentPlaylist.songs, index) },
-                        onAddToQueue = { viewModel.addToQueue(song) }
+                        onClick = { viewModel.playSong(sortedSongs, index) },
+                        onAddToQueue = { viewModel.addToQueue(song) },
+                        onAddToPlaylist = { showAddToPlaylistDialog = song },
+                        onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) }
                     )
                 }
             }
@@ -371,6 +489,11 @@ private fun PlaylistHeader(
     onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAddToQueue: () -> Unit = {},
+    onRenameClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {},
+    onAddToPlaylistClick: () -> Unit = {},
+    sortOrder: PlaylistSongSortOrder = PlaylistSongSortOrder.CUSTOM,
+    onSortOrderChange: (PlaylistSongSortOrder) -> Unit = {},
     isLandscape: Boolean = false
 ) {
     Box(
@@ -510,6 +633,58 @@ private fun PlaylistHeader(
                 }
 
                 // More options
+                var sortExpanded by remember { mutableStateOf(false) }
+
+                Box {
+                    IconButton(onClick = { sortExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = stringResource(R.string.sort)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = sortExpanded,
+                        onDismissRequest = { sortExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Custom order") },
+                            onClick = { onSortOrderChange(PlaylistSongSortOrder.CUSTOM); sortExpanded = false },
+                            trailingIcon = {
+                                if (sortOrder == PlaylistSongSortOrder.CUSTOM) {
+                                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.title)) },
+                            onClick = { onSortOrderChange(PlaylistSongSortOrder.TITLE); sortExpanded = false },
+                            trailingIcon = {
+                                if (sortOrder == PlaylistSongSortOrder.TITLE) {
+                                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.artist)) },
+                            onClick = { onSortOrderChange(PlaylistSongSortOrder.ARTIST); sortExpanded = false },
+                            trailingIcon = {
+                                if (sortOrder == PlaylistSongSortOrder.ARTIST) {
+                                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.release_year)) },
+                            onClick = { onSortOrderChange(PlaylistSongSortOrder.YEAR); sortExpanded = false },
+                            trailingIcon = {
+                                if (sortOrder == PlaylistSongSortOrder.YEAR) {
+                                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        )
+                    }
+                }
+
                 Box {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
@@ -544,7 +719,24 @@ private fun PlaylistHeader(
                                 )
                             },
                             text = { Text(stringResource(R.string.menu_add_to_playlist)) },
-                            onClick = { showMenu = false /* TODO: implement */ }
+                            onClick = { 
+                                showMenu = false
+                                onAddToPlaylistClick()
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DriveFileRenameOutline,
+                                    contentDescription = stringResource(R.string.menu_rename),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            text = { Text(stringResource(R.string.menu_rename)) },
+                            onClick = {
+                                showMenu = false
+                                onRenameClick()
+                            }
                         )
                         DropdownMenuItem(
                             leadingIcon = {
@@ -562,11 +754,19 @@ private fun PlaylistHeader(
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.menu_delete_playlist),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.error
                                 )
                             },
-                            text = { Text(stringResource(R.string.menu_delete_playlist)) },
-                            onClick = { showMenu = false /* TODO: implement */ }
+                            text = { 
+                                Text(
+                                    stringResource(R.string.menu_delete_playlist),
+                                    color = MaterialTheme.colorScheme.error
+                                ) 
+                            },
+                            onClick = { 
+                                showMenu = false
+                                onDeleteClick()
+                            }
                         )
                     }
                 }

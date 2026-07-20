@@ -25,5 +25,10 @@ data class PlaylistWithSongs(
             entityColumn = "songId"
         )
     )
-    val songs: List<SongWithArtist>
+    val songs: List<SongWithArtist>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "playlistId"
+    )
+    val crossRefs: List<PlaylistSongCrossRef>
 )

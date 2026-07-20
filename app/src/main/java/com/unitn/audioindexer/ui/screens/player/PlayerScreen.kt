@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
@@ -65,10 +64,13 @@ import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.ui.components.AddToPlaylistDialog
+import com.unitn.audioindexer.ui.components.CreatePlaylistDialog
 import com.unitn.audioindexer.ui.toImageVector
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.PlayerUiState
 import com.unitn.audioindexer.ui.viewmodels.PlayerViewModel
+import com.unitn.audioindexer.ui.viewmodels.PlaylistsViewModel
 
 @Composable
 fun PlayerScreen(
@@ -84,6 +86,40 @@ fun PlayerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication
+    val playlistsViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val playlists by playlistsViewModel.playlists.collectAsState()
+
+    var showAddToPlaylistDialog by remember { mutableStateOf(false) }
+    var showCreateDialog by remember { mutableStateOf(false) }
+
+    if (showAddToPlaylistDialog) {
+        val currentSong = uiState.currentSong
+        if (currentSong != null) {
+            AddToPlaylistDialog(
+                playlists = playlists,
+                onDismissRequest = { showAddToPlaylistDialog = false },
+                onPlaylistSelected = { playlist ->
+                    viewModel.addSongToPlaylist(playlist.id, currentSong.id)
+                    showAddToPlaylistDialog = false
+                },
+                onCreateNewPlaylist = {
+                    showCreateDialog = true
+                }
+            )
+        }
+    }
+
+    if (showCreateDialog) {
+        CreatePlaylistDialog(
+            onDismissRequest = { showCreateDialog = false },
+            onConfirm = { name ->
+                playlistsViewModel.createPlaylist(name)
+                showCreateDialog = false
+            }
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -162,7 +198,9 @@ fun PlayerScreen(
                     .padding(horizontal = 24.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                PlayerTopBar(onBackClick = onBackClick)
+                PlayerTopBar(
+                    onBackClick = onBackClick
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -228,19 +266,6 @@ private fun PlayerTopBar(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false }
             ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.menu_add_to_playlist)) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.PlaylistAddCircle,
-                            contentDescription = stringResource(R.string.menu_add_to_playlist)
-                        )
-                    },
-                    onClick = {
-                        showMenu = false
-                        // TODO: Implement add to playlist
-                    }
-                )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.menu_properties)) },
                     leadingIcon = {

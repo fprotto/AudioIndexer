@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.data.repository.MusicRepository
 import com.unitn.audioindexer.playback.MusicController
 import com.unitn.audioindexer.playback.PlaybackState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class PlayerUiState(
     val currentSong: Song? = null,
@@ -23,7 +25,10 @@ data class PlayerUiState(
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
 )
 
-class PlayerViewModel(private val musicController: MusicController) : ViewModel() {
+class PlayerViewModel(
+    private val repository: MusicRepository,
+    private val musicController: MusicController
+) : ViewModel() {
     val uiState: StateFlow<PlayerUiState> = musicController.state
         .map { it.toUiState() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
@@ -51,6 +56,12 @@ class PlayerViewModel(private val musicController: MusicController) : ViewModel(
 
     fun cycleRepeatMode() {
         musicController.cycleRepeatMode()
+    }
+
+    fun addSongToPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
+        }
     }
 
     private fun PlaybackState.toUiState(): PlayerUiState {

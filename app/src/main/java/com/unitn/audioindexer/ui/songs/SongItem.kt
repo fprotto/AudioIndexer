@@ -42,7 +42,9 @@ import com.unitn.audioindexer.ui.toImageVector
 fun SongCard(
     song: Song,
     onClick: () -> Unit = {},
-    onAddToQueue: () -> Unit = {}
+    onAddToQueue: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {},
+    onRemoveFromPlaylist: (() -> Unit)? = null
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -130,21 +132,7 @@ fun SongCard(
                         text = { Text(stringResource(R.string.menu_add_to_playlist)) },
                         onClick = {
                             showMenu = false
-                            // TODO: implement add to playlist
-                        }
-                    )
-                    DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.DriveFileRenameOutline,
-                                contentDescription = stringResource(R.string.menu_rename),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                        text = { Text(stringResource(R.string.menu_rename)) },
-                        onClick = {
-                            showMenu = false
-                            // TODO: implement rename
+                            onAddToPlaylist()
                         }
                     )
                     DropdownMenuItem(
@@ -175,6 +163,27 @@ fun SongCard(
                             // TODO: implement delete
                         }
                     )
+                    if (onRemoveFromPlaylist != null) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(R.string.menu_delete),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            text = {
+                                Text(
+                                    "Remove from playlist",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                onRemoveFromPlaylist()
+                            }
+                        )
+                    }
                 }
             }
         },

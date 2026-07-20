@@ -59,4 +59,5 @@
         <item quantity="other">%1$d canzoni</item>
         <item quantity="many">%1$d canzoni</item>
     </plurals>
+    <string name="playlist_deletion_confirmation">Sei sicuro di voler eliminare \"%1$s\"?</string>
 </resources>

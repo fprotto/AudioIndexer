@@ -135,6 +135,20 @@ class MusicRepository(
         playlistDao.updatePlaylist(playlist)
     }
 
+    suspend fun deletePlaylist(id: Int) {
+        val playlist = playlistDao.getPlaylistById(id)?.playlist ?: return
+        playlistDao.deletePlaylist(playlist)
+    }
+
+    suspend fun renamePlaylist(id: Int, newName: String) {
+        val playlist = playlistDao.getPlaylistById(id)?.playlist ?: return
+        playlistDao.updatePlaylist(playlist.copy(name = newName))
+    }
+
+    suspend fun removeSongFromPlaylist(playlistId: Int, songId: Int) {
+        playlistDao.deleteSongFromPlaylist(playlistId, songId)
+    }
+
     suspend fun incrementPlayCount(songId: Int) {
         songDao.incrementPlayCount(songId)
     }
@@ -165,7 +179,14 @@ class MusicRepository(
     }
 
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long) {
-        playlistDao.insertPlaylistSongCrossRef(com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef(playlistId.toInt(), songId.toInt()))
+        val maxOrder = playlistDao.getMaxOrderForPlaylist(playlistId.toInt()) ?: -1
+        playlistDao.insertPlaylistSongCrossRef(
+            com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef(
+                playlistId = playlistId.toInt(),
+                songId = songId.toInt(),
+                order = maxOrder + 1
+            )
+        )
     }
 
     fun syncRemoteSource(sourceId: Int) {
@@ -195,7 +216,7 @@ class MusicRepository(
         return Artist(id, name, iconSource)
     }
 
-    private fun SongWithArtist.toDomain(): Song {
+    private fun SongWithArtist.toDomain(playlistOrder: Int = 0): Song {
         val iconSource = when (song.coverType) {
             "vector" -> IconSource.VectorIcon(song.coverValue)
             "uri" -> IconSource.UriIcon(song.coverValue)
@@ -208,7 +229,8 @@ class MusicRepository(
             cover = iconSource,
             path = song.path,
             releaseYear = song.releaseYear,
-            playCount = song.playCount
+            playCount = song.playCount,
+            playlistOrder = playlistOrder
         )
     }
 
@@ -218,11 +240,15 @@ class MusicRepository(
             "uri" -> IconSource.UriIcon(playlist.coverValue)
             else -> IconSource.VectorIcon("FeaturedPlayList")
         }
+        
+        val orderMap = crossRefs.associateBy({ it.songId }, { it.order })
+        
         return Playlist(
             id = playlist.id,
             name = playlist.name,
             cover = iconSource,
-            songs = songs.map { it.toDomain() }
+            songs = songs.map { it.toDomain(orderMap[it.song.id] ?: 0) }
+                .sortedBy { it.playlistOrder }
         )
     }
 
@@ -234,13 +260,16 @@ class MusicRepository(
         }
         val artist = albumArtist?.toDomain() ?: Artist(0, "Unknown", IconSource.VectorIcon("PersonOutline"))
         
+        val orderMap = crossRefs.associateBy({ it.songId }, { it.order })
+        
         return Album(
             id = playlist.id,
             artist = artist,
             name = playlist.name,
             cover = iconSource,
             releaseYear = playlist.releaseYear ?: 0,
-            songs = songs.map { it.toDomain() }
+            songs = songs.map { it.toDomain(orderMap[it.song.id] ?: 0) }
+                .sortedBy { it.playlistOrder }
         )
     }
 }

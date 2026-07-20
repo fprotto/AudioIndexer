@@ -13,6 +13,7 @@ import com.unitn.audioindexer.playback.PlaybackState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class TracksViewModel(
     private val repository: MusicRepository,
@@ -27,6 +28,12 @@ class TracksViewModel(
 
     fun addToQueue(song: Song) {
         musicController.addSongsToQueue(listOf(song))
+    }
+
+    fun addSongToPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
+        }
     }
 }
 
@@ -47,6 +54,20 @@ class ArtistsViewModel(
 
     fun addAlbumToQueue(album: Album) {
         musicController.addSongsToQueue(album.songs)
+    }
+
+    fun addSongToPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
+        }
+    }
+
+    fun addSongsToPlaylist(playlistId: Int, songs: List<Song>) {
+        viewModelScope.launch {
+            songs.forEach {
+                repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
+            }
+        }
     }
 }
 
@@ -72,6 +93,20 @@ class AlbumsViewModel(
     fun addAlbumToQueue(album: Album) {
         musicController.addSongsToQueue(album.songs)
     }
+
+    fun addSongToPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
+        }
+    }
+
+    fun addSongsToPlaylist(playlistId: Int, songs: List<Song>) {
+        viewModelScope.launch {
+            songs.forEach {
+                repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
+            }
+        }
+    }
 }
 
 class PlaylistsViewModel(
@@ -95,6 +130,44 @@ class PlaylistsViewModel(
 
     fun addPlaylistToQueue(playlist: Playlist) {
         musicController.addSongsToQueue(playlist.songs)
+    }
+
+    fun createPlaylist(name: String) {
+        viewModelScope.launch {
+            repository.insertPlaylist(name, "FeaturedPlayList")
+        }
+    }
+
+    fun deletePlaylist(playlistId: Int) {
+        viewModelScope.launch {
+            repository.deletePlaylist(playlistId)
+        }
+    }
+
+    fun renamePlaylist(playlistId: Int, newName: String) {
+        viewModelScope.launch {
+            repository.renamePlaylist(playlistId, newName)
+        }
+    }
+
+    fun addSongToPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
+        }
+    }
+
+    fun addSongsToPlaylist(playlistId: Int, songs: List<Song>) {
+        viewModelScope.launch {
+            songs.forEach {
+                repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
+            }
+        }
+    }
+
+    fun removeSongFromPlaylist(playlistId: Int, songId: Int) {
+        viewModelScope.launch {
+            repository.removeSongFromPlaylist(playlistId, songId)
+        }
     }
 }
 
@@ -144,7 +217,7 @@ class MusicViewModelFactory(
             modelClass.isAssignableFrom(PlaylistsViewModel::class.java) -> PlaylistsViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(SetupViewModel::class.java) -> SetupViewModel(repository) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(repository) as T
-            modelClass.isAssignableFrom(PlayerViewModel::class.java) -> PlayerViewModel(musicController) as T
+            modelClass.isAssignableFrom(PlayerViewModel::class.java) -> PlayerViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(MiniPlayerViewModel::class.java) -> MiniPlayerViewModel(musicController) as T
             modelClass.isAssignableFrom(QueueViewModel::class.java) -> QueueViewModel(musicController) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")

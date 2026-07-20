@@ -7,5 +7,6 @@ data class Song(
     val cover: IconSource,
     val path: String,
     val releaseYear: Int,
-    val playCount: Int = 0
+    val playCount: Int = 0,
+    val playlistOrder: Int = 0
 )
