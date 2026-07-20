@@ -239,7 +239,7 @@ fun ArtistDetailScreen(
 
     val topSongs = artistAlbums.flatMap { it.songs }
         .sortedByDescending { it.playCount }
-        .take(10)
+        .take(5)
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE

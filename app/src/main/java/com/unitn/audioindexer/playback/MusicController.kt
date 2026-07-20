@@ -12,6 +12,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.data.repository.MusicRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import kotlin.time.Duration.Companion.milliseconds
 
 data class PlaybackState(
     val currentSong: Song? = null,
@@ -33,7 +35,10 @@ data class PlaybackState(
     val repeatMode: Int = Player.REPEAT_MODE_OFF
 )
 
-class MusicController(private val context: Context) {
+class MusicController(
+    private val context: Context,
+    private val repository: MusicRepository
+) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private val controller: MediaController?
         get() = if (controllerFuture?.isDone == true) controllerFuture?.get() else null
@@ -61,6 +66,16 @@ class MusicController(private val context: Context) {
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     updateCurrentSong(mediaItem)
+                    if (mediaItem != null) {
+                        scope.launch {
+                            try {
+                                val songId = mediaItem.mediaId.toInt()
+                                repository.incrementPlayCount(songId)
+                            } catch (e: Exception) {
+                                // Ignore if mediaId is not an Int
+                            }
+                        }
+                    }
                 }
 
                 override fun onPositionDiscontinuity(
@@ -119,7 +134,7 @@ class MusicController(private val context: Context) {
     private fun getQueueFromPlayer(player: Player): List<Song> {
         val queue = mutableListOf<Song>()
         for (i in 0 until player.mediaItemCount) {
-            player.getMediaItemAt(i).toSong()?.let { queue.add(it) }
+            player.getMediaItemAt(i).toSong().let { queue.add(it) }
         }
         return queue
     }
@@ -137,7 +152,7 @@ class MusicController(private val context: Context) {
         progressJob = scope.launch {
             while (isActive) {
                 updateProgress()
-                delay(1000)
+                delay(1000.milliseconds)
             }
         }
     }

@@ -27,6 +27,9 @@ interface SongDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSong(song: SongEntity): Long
 
+    @Query("UPDATE songs SET playCount = playCount + 1 WHERE id = :songId")
+    suspend fun incrementPlayCount(songId: Int)
+
     @Update
     suspend fun updateSong(song: SongEntity): Int
 

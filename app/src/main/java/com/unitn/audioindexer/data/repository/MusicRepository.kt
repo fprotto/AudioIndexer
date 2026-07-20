@@ -135,6 +135,10 @@ class MusicRepository(
         playlistDao.updatePlaylist(playlist)
     }
 
+    suspend fun incrementPlayCount(songId: Int) {
+        songDao.incrementPlayCount(songId)
+    }
+
     fun saveArtwork(artwork: ByteArray): String? {
         return try {
             val md = MessageDigest.getInstance("MD5")

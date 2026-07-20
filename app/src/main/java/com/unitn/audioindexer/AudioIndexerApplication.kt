@@ -16,5 +16,5 @@ class AudioIndexerApplication : Application() {
             database.musicSourceDao()
         ) 
     }
-    val musicController by lazy { MusicController(this) }
+    val musicController by lazy { MusicController(this, repository) }
 }
