@@ -21,6 +21,7 @@ data class ArtistEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val sourceId: Int,
     val name: String,
+    val mbid: String? = null,
     val propicType: String, // "vector" or "uri"
     val propicValue: String // Icon name or URI string
 )

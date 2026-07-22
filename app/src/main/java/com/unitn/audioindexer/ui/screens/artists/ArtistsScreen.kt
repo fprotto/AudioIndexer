@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -68,6 +69,9 @@ import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.ui.viewmodels.ArtistsViewModel
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import kotlinx.coroutines.flow.first
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun ArtistsScreen(
@@ -174,8 +178,6 @@ fun ArtistItem(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
     ListItem(
         headlineContent = {
             Text(
@@ -190,16 +192,24 @@ fun ArtistItem(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(MaterialTheme.shapes.small)
+                    .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.PersonOutline,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
+                when (val propic = artist.propic) {
+                    is IconSource.VectorIcon -> Icon(
+                        imageVector = propic.toImageVector(),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    is IconSource.UriIcon -> AsyncImage(
+                        model = propic.uri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         },
         modifier = Modifier.clickable(onClick = { navController.navigate(Screen.Artist.createRoute(artist.id)) })
@@ -254,28 +264,27 @@ fun ArtistDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .statusBarsPadding()
+                        .height(300.dp)
                 ) {
+                    ArtistHeader(
+                        artist = currentArtist,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
                     // Back button pinned at the top
                     IconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
-                            .align(Alignment.TopStart)
+                            .statusBarsPadding()
+                            .padding(8.dp)
+                            .background(Color.Black.copy(alpha = 0.3f), CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_back),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = Color.White
                         )
                     }
-
-            ArtistHeader(
-                        artist = currentArtist,
-                        modifier = Modifier
-                            .padding(top = 56.dp, bottom = 24.dp)
-                            .padding(horizontal = 16.dp)
-                    )
                 }
             }
 
@@ -346,41 +355,53 @@ fun ArtistHeader(
     artist: Artist,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    Box(
+        modifier = modifier
     ) {
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(RoundedCornerShape(50.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            when (val propic = artist.propic) {
-                is IconSource.VectorIcon -> Icon(
+        // Hero Image
+        when (val propic = artist.propic) {
+            is IconSource.VectorIcon -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
                     imageVector = propic.toImageVector(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(120.dp)
                 )
-                is IconSource.UriIcon -> {
-                    // TODO: Use Coil for URI
-                    Icon(
-                        imageVector = Icons.Default.PersonOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
             }
+            is IconSource.UriIcon -> AsyncImage(
+                model = propic.uri,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
         }
+
+        // Gradient Scrim
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                        startY = 300f
+                    )
+                )
+        )
+
+        // Artist Name
         Text(
             text = artist.name,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f)
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
         )
     }
 }

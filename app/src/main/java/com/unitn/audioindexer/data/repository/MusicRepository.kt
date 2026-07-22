@@ -33,6 +33,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import com.unitn.audioindexer.data.network.AudioDbApi
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URL
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MusicRepository(
@@ -79,6 +85,12 @@ class MusicRepository(
 
     val allSources: Flow<List<MusicSourceEntity>> = musicSourceDao.getAllSources()
 
+    private val audioDbApi = Retrofit.Builder()
+        .baseUrl("https://www.theaudiodb.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(AudioDbApi::class.java)
+
     suspend fun getSourceCount(): Int = musicSourceDao.getSourceCount()
 
     suspend fun getSourceById(id: Int): MusicSourceEntity? = musicSourceDao.getSourceById(id)
@@ -102,9 +114,9 @@ class MusicRepository(
 
     suspend fun getAlbumById(id: Int): Album? = playlistDao.getPlaylistById(id)?.toAlbumDomain()
 
-    suspend fun insertArtist(name: String, propicName: String): Long {
+    suspend fun insertArtist(name: String, propicName: String, mbid: String? = null): Long {
         val sourceId = activeSourceId.value ?: return -1
-        return artistDao.insertArtist(ArtistEntity(sourceId = sourceId, name = name, propicType = "vector", propicValue = propicName))
+        return artistDao.insertArtist(ArtistEntity(sourceId = sourceId, name = name, mbid = mbid, propicType = "vector", propicValue = propicName))
     }
 
     suspend fun insertSong(
@@ -207,6 +219,28 @@ class MusicRepository(
                 order = finalOrder
             )
         )
+    }
+
+    suspend fun resolveArtistImage(artistId: Int) = withContext(Dispatchers.IO) {
+        val artist = artistDao.getArtistById(artistId) ?: return@withContext
+        
+        try {
+            val mbid = artist.mbid ?: return@withContext
+
+            // Get artist thumbnail from TheAudioDB
+            val adbResponse = audioDbApi.getArtistByMbid(mbid)
+            val thumbUrl = adbResponse.artists?.firstOrNull()?.strArtistThumb
+            
+            if (thumbUrl != null) {
+                val imageBytes = URL(thumbUrl).readBytes()
+                val localPath = saveArtwork(imageBytes)
+                if (localPath != null) {
+                    artistDao.updateArtist(artist.copy(propicType = "uri", propicValue = localPath))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MusicRepository", "Error resolving artist image for ${artist.name}", e)
+        }
     }
 
     fun syncRemoteSource(sourceId: Int) {

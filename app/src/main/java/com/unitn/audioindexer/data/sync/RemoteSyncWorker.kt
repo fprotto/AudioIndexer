@@ -110,6 +110,7 @@ class RemoteSyncWorker(
             
             var year = 0
             var artwork: ByteArray? = null
+            var mbid: String? = null
             val metadataBuilder = MediaMetadata.Builder()
 
             for (i in 0 until trackGroups.length) {
@@ -121,28 +122,23 @@ class RemoteSyncWorker(
                             val entry = metadata.get(k)
                             entry.populateMediaMetadata(metadataBuilder)
                             
-                            val yearFromEntry = when (entry) {
+                            when (entry) {
                                 is TextInformationFrame -> {
                                     if (entry.id in listOf("TDRC", "TYER", "TDRL")) {
-                                        entry.values.firstOrNull()?.let { parseYear(it) }
-                                    } else null
+                                        entry.values.firstOrNull()?.let { parseYear(it) }?.let { if (it != 0) year = it }
+                                    } else if (entry.id == "TXXX" && entry.description?.contains("MusicBrainz Artist Id", ignoreCase = true) == true) {
+                                        mbid = entry.values.firstOrNull()?.split(";")?.firstOrNull()?.trim()
+                                    }
                                 }
                                 is VorbisComment -> {
                                     if (entry.key.equals("DATE", ignoreCase = true)) {
-                                        parseYear(entry.value)
-                                    } else null
+                                        parseYear(entry.value).let { if (it != 0) year = it }
+                                    } else if (entry.key.equals("MUSICBRAINZ_ARTISTID", ignoreCase = true)) {
+                                        mbid = entry.value.split(";").firstOrNull()?.trim()
+                                    }
                                 }
-                                else -> null
-                            }
-                            if (yearFromEntry != null && yearFromEntry != 0) {
-                                year = yearFromEntry
-                            }
-
-                            if (artwork == null) {
-                                when (entry) {
-                                    is ApicFrame -> artwork = entry.pictureData
-                                    is PictureFrame -> artwork = entry.pictureData
-                                }
+                                is ApicFrame -> if (artwork == null) artwork = entry.pictureData
+                                is PictureFrame -> if (artwork == null) artwork = entry.pictureData
                             }
                         }
                     }
@@ -169,8 +165,29 @@ class RemoteSyncWorker(
                 // 1. Handle Artist
                 var artist = database.artistDao().getArtistByName(artistName, sourceId)
                 if (artist == null) {
-                    val artistId = repository.insertArtist(artistName, "PersonOutline")
+                    val artistId = repository.insertArtist(artistName, "PersonOutline", mbid)
                     artist = database.artistDao().getArtistById(artistId.toInt())
+                    if (artist != null) {
+                        repository.resolveArtistImage(artist.id)
+                    }
+                } else {
+                    var needsUpdate = false
+                    var updatedArtist = artist
+                    
+                    if (mbid != null && artist.mbid == null) {
+                        updatedArtist = updatedArtist.copy(mbid = mbid)
+                        needsUpdate = true
+                    }
+                    
+                    if (needsUpdate) {
+                        database.artistDao().updateArtist(updatedArtist)
+                        artist = updatedArtist
+                    }
+                    
+                    // Always try to resolve image if it's still a vector icon
+                    if (artist.propicType == "vector") {
+                        repository.resolveArtistImage(artist.id)
+                    }
                 }
 
                 if (artist == null) return@withLock
