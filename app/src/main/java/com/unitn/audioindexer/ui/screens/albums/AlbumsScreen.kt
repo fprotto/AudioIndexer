@@ -215,7 +215,7 @@ fun AlbumsSection(
     modifier: Modifier = Modifier
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        albums.forEach { album ->
+        albums.sortedBy { album -> album.name }.forEach { album ->
             AlbumItem(
                 album,
                 navController,
