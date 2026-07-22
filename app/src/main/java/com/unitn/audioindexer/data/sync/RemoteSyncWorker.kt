@@ -1,13 +1,23 @@
 package com.unitn.audioindexer.data.sync
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.unitn.audioindexer.AudioIndexerApplication
-import com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef
 import com.unitn.audioindexer.data.network.RemoteMusicApi
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.MetadataRetriever
+import androidx.media3.extractor.metadata.id3.ApicFrame
+import androidx.media3.extractor.metadata.id3.TextInformationFrame
+import androidx.media3.extractor.metadata.vorbis.VorbisComment
+import androidx.media3.extractor.metadata.flac.PictureFrame
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -16,6 +26,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import androidx.annotation.OptIn
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class RemoteSyncWorker(
     context: Context,
@@ -65,9 +77,9 @@ class RemoteSyncWorker(
     ): Unit = coroutineScope {
         val response = if (path.isEmpty()) api.browseRoot() else api.browsePath(path)
 
-        for (file in response.files) {
+        response.files.forEachIndexed { index, file ->
             launch {
-                processFile(file.url, file.name, sourceId, baseUrl, semaphore, dbMutex)
+                processFile(file.url, file.name, sourceId, baseUrl, semaphore, dbMutex, index)
             }
         }
 
@@ -78,36 +90,80 @@ class RemoteSyncWorker(
         }
     }
 
+    @OptIn(UnstableApi::class)
     private suspend fun processFile(
         fileUrl: String,
         fileName: String,
         sourceId: Int,
         baseUrl: String,
         semaphore: Semaphore,
-        dbMutex: Mutex
+        dbMutex: Mutex,
+        fileIndex: Int
     ) {
         val fullUrl = if (fileUrl.startsWith("http")) fileUrl else "$baseUrl${fileUrl.removePrefix("/")}"
         
-        // Check if song already exists
-        val existingSong = database.songDao().getSongByPath(fullUrl, sourceId)
-        if (existingSong != null) return
-
-        val retriever = MediaMetadataRetriever()
+        val mediaItem = MediaItem.fromUri(fullUrl)
         try {
-            semaphore.withPermit {
-                retriever.setDataSource(fullUrl, HashMap<String, String>())
+            val trackGroups = semaphore.withPermit {
+                MetadataRetriever.retrieveMetadata(applicationContext, mediaItem).await()
             }
             
-            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: fileName
-            val artistName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) ?: "Unknown Artist"
-            val albumName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
-            val yearStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
-            val year = yearStr?.toIntOrNull() ?: 0
+            var year = 0
+            var artwork: ByteArray? = null
+            val metadataBuilder = MediaMetadata.Builder()
+
+            for (i in 0 until trackGroups.length) {
+                val trackGroup = trackGroups.get(i)
+                for (j in 0 until trackGroup.length) {
+                    val format = trackGroup.getFormat(j)
+                    format.metadata?.let { metadata ->
+                        for (k in 0 until metadata.length()) {
+                            val entry = metadata.get(k)
+                            entry.populateMediaMetadata(metadataBuilder)
+                            
+                            val yearFromEntry = when (entry) {
+                                is TextInformationFrame -> {
+                                    if (entry.id in listOf("TDRC", "TYER", "TDRL")) {
+                                        entry.values.firstOrNull()?.let { parseYear(it) }
+                                    } else null
+                                }
+                                is VorbisComment -> {
+                                    if (entry.key.equals("DATE", ignoreCase = true)) {
+                                        parseYear(entry.value)
+                                    } else null
+                                }
+                                else -> null
+                            }
+                            if (yearFromEntry != null && yearFromEntry != 0) {
+                                year = yearFromEntry
+                            }
+
+                            if (artwork == null) {
+                                when (entry) {
+                                    is ApicFrame -> artwork = entry.pictureData
+                                    is PictureFrame -> artwork = entry.pictureData
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             
-            val artwork = retriever.embeddedPicture
+            val mediaMetadata = metadataBuilder.build()
+            val title = mediaMetadata.title?.toString() ?: fileName
+            val artistName = (mediaMetadata.artist ?: mediaMetadata.albumArtist ?: "Unknown Artist").toString()
+            val albumName = mediaMetadata.albumTitle?.toString()
+            if (year == 0) year = mediaMetadata.releaseYear ?: 0
+            
+            val trackNumber = mediaMetadata.trackNumber ?: (fileIndex + 1)
+            if (artwork == null) artwork = mediaMetadata.artworkData
+            
             val artworkPath = artwork?.let { repository.saveArtwork(it) }
 
             dbMutex.withLock {
+                // Check if song already exists (within the lock to be safe)
+                val existingSong = database.songDao().getSongByPath(fullUrl, sourceId)
+                
                 // 1. Handle Artist
                 var artist = database.artistDao().getArtistByName(artistName, sourceId)
                 if (artist == null) {
@@ -118,15 +174,16 @@ class RemoteSyncWorker(
                 if (artist == null) return@withLock
 
                 // 2. Handle Song
-                val songId = repository.insertSong(
-                    title = title,
-                    artistId = artist.id.toLong(),
-                    year = year,
-                    source = "remote",
-                    path = fullUrl,
-                    coverType = if (artworkPath != null) "uri" else "vector",
-                    coverValue = artworkPath ?: "MusicNote"
-                )
+                val songId = existingSong?.id?.toLong()
+                    ?: repository.insertSong(
+                        title = title,
+                        artistId = artist.id.toLong(),
+                        year = year,
+                        source = "remote",
+                        path = fullUrl,
+                        coverType = if (artworkPath != null) "uri" else "vector",
+                        coverValue = artworkPath ?: "MusicNote"
+                    )
 
                 // 3. Handle Album
                 if (albumName != null) {
@@ -153,17 +210,31 @@ class RemoteSyncWorker(
                     }
 
                     if (album != null) {
-                        database.playlistDao().insertPlaylistSongCrossRef(
-                            PlaylistSongCrossRef(album.id, songId.toInt())
-                        )
+                        repository.addSongToPlaylist(album.id.toLong(), songId, trackNumber)
                     }
                 }
             }
 
         } catch (e: Exception) {
             Log.e("RemoteSyncWorker", "Error processing file: $fullUrl", e)
-        } finally {
-            retriever.release()
         }
+    }
+
+    @OptIn(UnstableApi::class)
+    private suspend fun <T> ListenableFuture<T>.await(): T = suspendCancellableCoroutine { cont ->
+        addListener({
+            try {
+                cont.resume(get())
+            } catch (e: Exception) {
+                cont.resumeWithException(e)
+            }
+        }, MoreExecutors.directExecutor())
+        cont.invokeOnCancellation {
+            cancel(true)
+        }
+    }
+
+    private fun parseYear(dateString: String): Int {
+        return Regex("\\d{4}").find(dateString)?.value?.toIntOrNull() ?: 0
     }
 }

@@ -178,13 +178,13 @@ class MusicRepository(
         return playlistDao.insertPlaylist(PlaylistEntity(sourceId = sourceId, name = name, coverType = "vector", coverValue = coverName, isAlbum = isAlbum, albumArtistId = albumArtistId, releaseYear = releaseYear))
     }
 
-    suspend fun addSongToPlaylist(playlistId: Long, songId: Long) {
-        val maxOrder = playlistDao.getMaxOrderForPlaylist(playlistId.toInt()) ?: -1
+    suspend fun addSongToPlaylist(playlistId: Long, songId: Long, order: Int? = null) {
+        val finalOrder = order ?: ((playlistDao.getMaxOrderForPlaylist(playlistId.toInt()) ?: -1) + 1)
         playlistDao.insertPlaylistSongCrossRef(
             com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef(
                 playlistId = playlistId.toInt(),
                 songId = songId.toInt(),
-                order = maxOrder + 1
+                order = finalOrder
             )
         )
     }
@@ -261,15 +261,20 @@ class MusicRepository(
         val artist = albumArtist?.toDomain() ?: Artist(0, "Unknown", IconSource.VectorIcon("PersonOutline"))
         
         val orderMap = crossRefs.associateBy({ it.songId }, { it.order })
-        
+        val domainSongs = songs.map { it.toDomain(orderMap[it.song.id] ?: 0) }
+            .sortedBy { it.playlistOrder }
+
+        val albumYear = domainSongs.firstOrNull { it.releaseYear > 0 }?.releaseYear
+            ?: playlist.releaseYear?.takeIf { it > 0 }
+            ?: 0
+
         return Album(
             id = playlist.id,
             artist = artist,
             name = playlist.name,
             cover = iconSource,
-            releaseYear = playlist.releaseYear ?: 0,
-            songs = songs.map { it.toDomain(orderMap[it.song.id] ?: 0) }
-                .sortedBy { it.playlistOrder }
+            releaseYear = albumYear,
+            songs = domainSongs
         )
     }
 }
