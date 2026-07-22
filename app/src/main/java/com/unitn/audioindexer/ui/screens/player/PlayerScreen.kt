@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -236,14 +237,14 @@ private fun PlayerTopBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Row(
+    Box(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        contentAlignment = Alignment.Center
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
             Icon(
                 Icons.Default.KeyboardArrowDown,
                 contentDescription = stringResource(R.string.minimize)
@@ -255,32 +256,6 @@ private fun PlayerTopBar(
             fontWeight = FontWeight.Bold,
             letterSpacing = 2.sp
         )
-        Box {
-            IconButton(onClick = { showMenu = true }) {
-                Icon(
-                    Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.more_options)
-                )
-            }
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.menu_properties)) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = stringResource(R.string.menu_properties)
-                        )
-                    },
-                    onClick = {
-                        showMenu = false
-                        // TODO: Implement properties
-                    }
-                )
-            }
-        }
     }
 }
 

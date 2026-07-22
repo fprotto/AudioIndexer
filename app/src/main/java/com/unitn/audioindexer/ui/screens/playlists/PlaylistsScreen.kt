@@ -647,7 +647,7 @@ private fun PlaylistHeader(
                         onDismissRequest = { sortExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Custom order") },
+                            text = { Text(stringResource(R.string.custom_order)) },
                             onClick = { onSortOrderChange(PlaylistSongSortOrder.CUSTOM); sortExpanded = false },
                             trailingIcon = {
                                 if (sortOrder == PlaylistSongSortOrder.CUSTOM) {

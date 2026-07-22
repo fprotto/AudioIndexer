@@ -664,7 +664,7 @@ private fun AlbumHeader(
                 )
             }
 
-            // Play button + Menu
+            // Play button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -688,15 +688,6 @@ private fun AlbumHeader(
                         style = if (isLandscape) MaterialTheme.typography.labelLarge else MaterialTheme.typography.bodyLarge
                     )
                 }
-
-                var showMenu by remember { mutableStateOf(false) }
-                AlbumMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
-                    onMoreOptionsClick = { showMenu = true },
-                    onAddToQueue = onAddToQueue,
-                    onAddToPlaylist = onAddToPlaylistClick
-                )
             }
         }
     }
