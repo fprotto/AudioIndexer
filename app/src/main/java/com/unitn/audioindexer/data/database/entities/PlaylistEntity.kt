@@ -25,5 +25,6 @@ data class PlaylistEntity(
     val coverValue: String,
     val isAlbum: Boolean = false,
     val albumArtistId: Int? = null,
+    val artistNameOverride: String? = null,
     val releaseYear: Int? = null
 )

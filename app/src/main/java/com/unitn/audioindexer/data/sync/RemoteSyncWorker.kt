@@ -151,7 +151,9 @@ class RemoteSyncWorker(
             
             val mediaMetadata = metadataBuilder.build()
             val title = mediaMetadata.title?.toString() ?: fileName
-            val artistName = (mediaMetadata.artist ?: mediaMetadata.albumArtist ?: "Unknown Artist").toString()
+            val rawArtistName = (mediaMetadata.artist ?: mediaMetadata.albumArtist ?: "Unknown Artist").toString()
+            val artistName = normalizeArtistName(rawArtistName)
+            
             val albumName = mediaMetadata.albumTitle?.toString()
             if (year == 0) year = mediaMetadata.releaseYear ?: 0
             
@@ -181,6 +183,7 @@ class RemoteSyncWorker(
                         year = year,
                         source = "remote",
                         path = fullUrl,
+                        artistNameOverride = if (rawArtistName != artistName) rawArtistName else null,
                         coverType = if (artworkPath != null) "uri" else "vector",
                         coverValue = artworkPath ?: "MusicNote"
                     )
@@ -194,7 +197,8 @@ class RemoteSyncWorker(
                             coverName = artworkPath ?: "Album",
                             isAlbum = true,
                             albumArtistId = artist.id,
-                            releaseYear = year
+                            releaseYear = year,
+                            artistNameOverride = if (rawArtistName != artistName) rawArtistName else null
                         )
                         // If we have artwork, set coverType to uri
                         if (artworkPath != null) {
@@ -236,5 +240,20 @@ class RemoteSyncWorker(
 
     private fun parseYear(dateString: String): Int {
         return Regex("\\d{4}").find(dateString)?.value?.toIntOrNull() ?: 0
+    }
+
+    private fun normalizeArtistName(name: String): String {
+        val featuringSeparators = listOf(
+            " feat. ", " feat ", " featuring ", " ft. ", " ft "
+        )
+        
+        var normalized = name
+        featuringSeparators.forEach { separator ->
+            val index = normalized.indexOf(separator, ignoreCase = true)
+            if (index != -1) {
+                normalized = normalized.substring(0, index)
+            }
+        }
+        return normalized.trim()
     }
 }

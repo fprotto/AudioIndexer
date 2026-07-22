@@ -22,7 +22,7 @@ import com.unitn.audioindexer.data.database.entities.SongEntity
         PlaylistSongCrossRef::class,
         MusicSourceEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -29,6 +29,7 @@ data class SongEntity(
     val title: String,
     val artistId: Int,
     val releaseYear: Int,
+    val artistNameOverride: String? = null,
     val coverType: String = "vector",
     val coverValue: String = "MusicNote",
     val playCount: Int = 0,

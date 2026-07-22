@@ -332,7 +332,7 @@ fun MiniPlayer(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = song.artist.name,
+                            text = song.artistName,
                             style = MaterialTheme.typography.bodySmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

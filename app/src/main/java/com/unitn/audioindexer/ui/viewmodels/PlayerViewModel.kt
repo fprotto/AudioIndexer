@@ -68,7 +68,7 @@ class PlayerViewModel(
         return PlayerUiState(
             currentSong = currentSong,
             currentSongTitle = currentSong?.title ?: "Unknown",
-            currentArtist = currentSong?.artist?.name ?: "Unknown Artist",
+            currentArtist = currentSong?.artistName ?: "Unknown Artist",
             isPlaying = isPlaying,
             progress = if (duration > 0) progress.toFloat() / duration else 0f,
             positionText = formatTime(progress),

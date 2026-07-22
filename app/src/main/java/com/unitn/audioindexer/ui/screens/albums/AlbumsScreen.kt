@@ -99,7 +99,7 @@ fun AlbumsScreen(
     val filteredAlbums = remember(searchQuery, allAlbums) {
         allAlbums.filter {
             it.name.contains(searchQuery, ignoreCase = true) ||
-                    it.artist.name.contains(searchQuery, ignoreCase = true)
+                    it.artistName.contains(searchQuery, ignoreCase = true)
         }
     }
 

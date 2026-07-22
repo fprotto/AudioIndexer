@@ -73,14 +73,14 @@ fun TracksScreen(
     val filteredSongs = remember(searchQuery, allSongs) {
         allSongs.filter {
             it.title.contains(searchQuery, ignoreCase = true) ||
-                    it.artist.name.contains(searchQuery, ignoreCase = true)
+                    it.artistName.contains(searchQuery, ignoreCase = true)
         }
     }
 
     val sortedSongs = remember(sortOrder, filteredSongs) {
         when (sortOrder) {
             SongSortOrder.TITLE -> filteredSongs.sortedBy { it.title }
-            SongSortOrder.ARTIST -> filteredSongs.sortedBy { it.artist.name }
+            SongSortOrder.ARTIST -> filteredSongs.sortedBy { it.artistName }
             SongSortOrder.YEAR -> filteredSongs.sortedByDescending { it.releaseYear }
         }
     }

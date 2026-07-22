@@ -60,7 +60,7 @@ fun SongCard(
         },
         supportingContent = {
             Text(
-                text = song.artist.name,
+                text = song.artistName,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

@@ -330,7 +330,7 @@ fun PlaylistDetailScreen(
         when (sortOrder) {
             PlaylistSongSortOrder.CUSTOM -> currentPlaylist.songs // already sortedBy { it.playlistOrder } in repo
             PlaylistSongSortOrder.TITLE -> currentPlaylist.songs.sortedBy { it.title }
-            PlaylistSongSortOrder.ARTIST -> currentPlaylist.songs.sortedBy { it.artist.name }
+            PlaylistSongSortOrder.ARTIST -> currentPlaylist.songs.sortedBy { it.artistName }
             PlaylistSongSortOrder.YEAR -> currentPlaylist.songs.sortedByDescending { it.releaseYear }
         }
     }

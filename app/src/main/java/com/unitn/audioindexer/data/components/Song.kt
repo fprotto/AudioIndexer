@@ -4,6 +4,7 @@ data class Song(
     val id: Int,
     val title: String,
     val artist: Artist,
+    val artistName: String, // Full artist name for display
     val cover: IconSource,
     val path: String,
     val releaseYear: Int,

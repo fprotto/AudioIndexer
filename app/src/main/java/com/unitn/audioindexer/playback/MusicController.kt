@@ -236,7 +236,7 @@ class MusicController(
     private fun Song.toMediaItem(): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(title)
-            .setArtist(artist.name)
+            .setArtist(artistName)
             .setExtras(android.os.Bundle().apply {
                 putInt("id", id)
                 putString("coverType", when(val c = cover) {
@@ -264,11 +264,14 @@ class MusicController(
         val coverValue = extras?.getString("coverValue") ?: ""
         val cover = if (coverType == "uri") IconSource.UriIcon(coverValue) 
                     else IconSource.VectorIcon(coverValue.ifEmpty { "MusicNote" })
-        
+        val artist = com.unitn.audioindexer.data.components.Artist(0, metadata.artist?.toString() ?: "Unknown", IconSource.VectorIcon("PersonOutline"))
+        val artistName = artist.name
+
         return Song(
             id = mediaId.toInt(),
             title = metadata.title?.toString() ?: "Unknown",
-            artist = com.unitn.audioindexer.data.components.Artist(0, metadata.artist?.toString() ?: "Unknown", IconSource.VectorIcon("PersonOutline")),
+            artistName = artistName,
+            artist = artist,
             cover = cover,
             path = requestMetadata.mediaUri?.toString() ?: "",
             releaseYear = extras?.getInt("releaseYear") ?: 0

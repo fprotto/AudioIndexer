@@ -113,6 +113,7 @@ class MusicRepository(
         year: Int,
         source: String,
         path: String,
+        artistNameOverride: String? = null,
         coverType: String = "vector",
         coverValue: String = "MusicNote"
     ): Long {
@@ -123,6 +124,7 @@ class MusicRepository(
                 title = title,
                 artistId = artistId.toInt(),
                 releaseYear = year,
+                artistNameOverride = artistNameOverride,
                 source = source,
                 path = path,
                 coverType = coverType,
@@ -173,9 +175,27 @@ class MusicRepository(
         }
     }
 
-    suspend fun insertPlaylist(name: String, coverName: String, isAlbum: Boolean = false, albumArtistId: Int? = null, releaseYear: Int? = null): Long {
+    suspend fun insertPlaylist(
+        name: String,
+        coverName: String,
+        isAlbum: Boolean = false,
+        albumArtistId: Int? = null,
+        releaseYear: Int? = null,
+        artistNameOverride: String? = null
+    ): Long {
         val sourceId = activeSourceId.value ?: return -1
-        return playlistDao.insertPlaylist(PlaylistEntity(sourceId = sourceId, name = name, coverType = "vector", coverValue = coverName, isAlbum = isAlbum, albumArtistId = albumArtistId, releaseYear = releaseYear))
+        return playlistDao.insertPlaylist(
+            PlaylistEntity(
+                sourceId = sourceId,
+                name = name,
+                coverType = "vector",
+                coverValue = coverName,
+                isAlbum = isAlbum,
+                albumArtistId = albumArtistId,
+                releaseYear = releaseYear,
+                artistNameOverride = artistNameOverride
+            )
+        )
     }
 
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long, order: Int? = null) {
@@ -226,6 +246,7 @@ class MusicRepository(
             id = song.id,
             title = song.title,
             artist = artist.toDomain(),
+            artistName = song.artistNameOverride ?: artist.name,
             cover = iconSource,
             path = song.path,
             releaseYear = song.releaseYear,
@@ -271,6 +292,7 @@ class MusicRepository(
         return Album(
             id = playlist.id,
             artist = artist,
+            artistName = playlist.artistNameOverride ?: artist.name,
             name = playlist.name,
             cover = iconSource,
             releaseYear = albumYear,

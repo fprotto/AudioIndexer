@@ -137,7 +137,7 @@ fun QueueItem(
         },
         supportingContent = {
             Text(
-                text = song.artist.name,
+                text = song.artistName,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
