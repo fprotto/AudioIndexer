@@ -124,16 +124,30 @@ class RemoteSyncWorker(
                             
                             when (entry) {
                                 is TextInformationFrame -> {
-                                    if (entry.id in listOf("TDRC", "TYER", "TDRL")) {
-                                        entry.values.firstOrNull()?.let { parseYear(it) }?.let { if (it != 0) year = it }
-                                    } else if (entry.id == "TXXX" && entry.description?.contains("MusicBrainz Artist Id", ignoreCase = true) == true) {
+                                    val entryYear = entry.values.firstOrNull()?.let { parseYear(it) } ?: 0
+                                    if (entryYear != 0) {
+                                        if (entry.id in listOf("TDOR", "TORY")) {
+                                            year = entryYear // Priority: Original Year
+                                        } else if (year == 0 && entry.id in listOf("TDRC", "TYER", "TDRL")) {
+                                            year = entryYear // Fallback: Release Year
+                                        }
+                                    }
+                                    
+                                    if (entry.id == "TXXX" && entry.description?.contains("MusicBrainz Artist Id", ignoreCase = true) == true) {
                                         mbid = entry.values.firstOrNull()?.split(";")?.firstOrNull()?.trim()
                                     }
                                 }
                                 is VorbisComment -> {
-                                    if (entry.key.equals("DATE", ignoreCase = true)) {
-                                        parseYear(entry.value).let { if (it != 0) year = it }
-                                    } else if (entry.key.equals("MUSICBRAINZ_ARTISTID", ignoreCase = true)) {
+                                    val entryYear = parseYear(entry.value)
+                                    if (entryYear != 0) {
+                                        if (entry.key.equals("ORIGINALYEAR", ignoreCase = true) || entry.key.equals("ORIGINALDATE", ignoreCase = true)) {
+                                            year = entryYear // Priority: Original Year
+                                        } else if (year == 0 && (entry.key.equals("DATE", ignoreCase = true) || entry.key.equals("YEAR", ignoreCase = true))) {
+                                            year = entryYear // Fallback: Release Year
+                                        }
+                                    }
+                                    
+                                    if (entry.key.equals("MUSICBRAINZ_ARTISTID", ignoreCase = true)) {
                                         mbid = entry.value.split(";").firstOrNull()?.trim()
                                     }
                                 }
