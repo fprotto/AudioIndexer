@@ -329,8 +329,8 @@ fun PlaylistDetailScreen(
     val sortedSongs = remember(sortOrder, currentPlaylist.songs) {
         when (sortOrder) {
             PlaylistSongSortOrder.CUSTOM -> currentPlaylist.songs // already sortedBy { it.playlistOrder } in repo
-            PlaylistSongSortOrder.TITLE -> currentPlaylist.songs.sortedBy { it.title }
-            PlaylistSongSortOrder.ARTIST -> currentPlaylist.songs.sortedBy { it.artistName }
+            PlaylistSongSortOrder.TITLE -> currentPlaylist.songs.sortedBy { it.title.lowercase() }
+            PlaylistSongSortOrder.ARTIST -> currentPlaylist.songs.sortedBy { it.artistName.lowercase() }
             PlaylistSongSortOrder.YEAR -> currentPlaylist.songs.sortedByDescending { it.releaseYear }
         }
     }
