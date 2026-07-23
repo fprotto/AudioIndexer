@@ -219,7 +219,7 @@ class MusicRepository(
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long, order: Int? = null) {
         val finalOrder = order ?: ((playlistDao.getMaxOrderForPlaylist(playlistId.toInt()) ?: -1) + 1)
         playlistDao.insertPlaylistSongCrossRef(
-            com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef(
+            PlaylistSongCrossRef(
                 playlistId = playlistId.toInt(),
                 songId = songId.toInt(),
                 order = finalOrder

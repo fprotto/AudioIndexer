@@ -275,7 +275,7 @@ class RemoteSyncWorker(
 
     private fun normalizeArtistName(name: String): String {
         val featuringSeparators = listOf(
-            " feat. ", " feat ", " featuring ", " ft. ", " ft "
+            " feat. ", " feat ", " featuring ", " ft. ", " ft ", " & "
         )
         
         var normalized = name

@@ -321,7 +321,7 @@ fun ArtistDetailScreen(
                     )
                 }
 
-                val chunkedAlbums = artistAlbums.chunked(columns)
+                val chunkedAlbums = artistAlbums.sortedByDescending { album -> album.releaseYear }.chunked(columns)
                 items(chunkedAlbums) { rowAlbums ->
                     Row(
                         modifier = Modifier
