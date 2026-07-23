@@ -25,10 +25,10 @@
     <string name="settings_player_options">Player options</string>
     <string name="settings_change_language">Change language</string>
     <string name="settings_switch_theme">Switch theme</string>
-    <string name="settings_export_config">Export configuration</string>
-    <string name="settings_import_config">Import configuration</string>
-    <string name="config_exported">Configuration exported</string>
-    <string name="config_imported">Configuration imported</string>
+    <string name="settings_export_config">Export playlists</string>
+    <string name="settings_import_config">Import playlists</string>
+    <string name="config_exported">Playlists exported</string>
+    <string name="config_imported">Playlists imported</string>
     <string name="settings_switch_profile">Switch profile</string>
     <string name="shuffle">Shuffle</string>
     <string name="sort">Sort</string>
