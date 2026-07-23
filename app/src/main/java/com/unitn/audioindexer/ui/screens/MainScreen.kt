@@ -114,11 +114,11 @@ fun MainScreen(
                 .padding(padding),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { 
+            stickyHeader {
                 QuickNavigateToSection(
                     navController = navController,
                     currentSection = state
-                ) 
+                )
             }
             item {
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -421,7 +421,7 @@ fun QuickNavigateToSection(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+            .background(MaterialTheme.colorScheme.surfaceContainer),
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavigationTab(
