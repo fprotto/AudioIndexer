@@ -3,7 +3,10 @@ package com.unitn.audioindexer.ui.screens
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.ContextWrapper
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -141,6 +144,37 @@ fun TopBar(
     var showProfileMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            context.contentResolver.openOutputStream(it)?.let { stream ->
+                settingsViewModel.exportConfiguration(stream) {
+                    Toast.makeText(context, R.string.config_exported, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            context.contentResolver.openInputStream(it)?.let { stream ->
+                settingsViewModel.importConfiguration(stream) { result ->
+                    result.fold(
+                        onSuccess = {
+                            Toast.makeText(context, R.string.config_imported, Toast.LENGTH_SHORT).show()
+                        },
+                        onFailure = { error ->
+                            Toast.makeText(context, error.message ?: "Import failed", Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+
     TopAppBar(
         title = {
             Icon(
@@ -205,13 +239,26 @@ fun TopBar(
                         leadingIcon = {
                             Icon(
                                 Icons.Default.ImportExport,
+                                contentDescription = stringResource(R.string.settings_import_config)
+                            )
+                        },
+                        text = { Text(stringResource(R.string.settings_import_config)) },
+                        onClick = {
+                            showMenu = false
+                            importLauncher.launch(arrayOf("application/json"))
+                        }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.ImportExport,
                                 contentDescription = stringResource(R.string.settings_export_config)
                             )
                         },
                         text = { Text(stringResource(R.string.settings_export_config)) },
                         onClick = {
-                            /* TODO: implement */
                             showMenu = false
+                            exportLauncher.launch("audioindexer_config.json")
                         }
                     )
                     DropdownMenuItem(

@@ -10,12 +10,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.unitn.audioindexer.data.components.ExportConfig
 import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
 import com.unitn.audioindexer.data.repository.MusicRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.xmlpull.v1.XmlPullParser
+import java.io.InputStream
+import java.io.OutputStream
 import java.util.Locale
 
 class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
@@ -33,6 +38,34 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
 
     fun toggleTheme(systemInDarkTheme: Boolean) {
         isDarkTheme = !(isDarkTheme ?: systemInDarkTheme)
+    }
+
+    fun exportConfiguration(outputStream: OutputStream, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            val config = repository.exportActiveSourceConfiguration()
+            if (config != null) {
+                try {
+                    val json = Gson().toJson(config)
+                    outputStream.use { it.write(json.toByteArray()) }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            onComplete()
+        }
+    }
+
+    fun importConfiguration(inputStream: InputStream, onResult: (Result<Unit>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val json = inputStream.use { it.bufferedReader().readText() }
+                val config = Gson().fromJson(json, ExportConfig::class.java)
+                val result = repository.importConfiguration(config)
+                onResult(result)
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
+            }
+        }
     }
 
     fun setLanguage(context: Context, languageCode: String) {

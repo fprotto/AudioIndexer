@@ -5,6 +5,12 @@ import com.unitn.audioindexer.data.components.Artist
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.Song
+import com.unitn.audioindexer.data.components.ExportConfig
+import com.unitn.audioindexer.data.components.PlaylistConfig
+import com.unitn.audioindexer.data.components.SongConfig
+import com.unitn.audioindexer.data.components.SourceConfig
+import com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef
+import kotlinx.coroutines.flow.first
 import com.unitn.audioindexer.data.database.dao.ArtistDao
 import com.unitn.audioindexer.data.database.dao.MusicSourceDao
 import com.unitn.audioindexer.data.database.dao.PlaylistDao
@@ -258,6 +264,82 @@ class MusicRepository(
             .build()
 
         WorkManager.getInstance(context).enqueue(syncRequest)
+    }
+
+    suspend fun exportActiveSourceConfiguration(): ExportConfig? {
+        val sourceId = activeSourceId.value ?: return null
+        val source = musicSourceDao.getSourceById(sourceId) ?: return null
+        
+        val playlists = playlistDao.getPlaylistsBySource(sourceId).first()
+        
+        val playlistConfigs = playlists.map { relation ->
+            PlaylistConfig(
+                name = relation.playlist.name,
+                songs = relation.songs.map { songRelation ->
+                    SongConfig(
+                        title = songRelation.song.title,
+                        artistName = songRelation.song.artistNameOverride ?: songRelation.artist.name,
+                        path = songRelation.song.path
+                    )
+                }
+            )
+        }
+
+        return ExportConfig(
+            source = SourceConfig(
+                type = source.type,
+                path = source.path,
+                port = source.port,
+                name = source.name
+            ),
+            playlists = playlistConfigs
+        )
+    }
+
+    suspend fun importConfiguration(config: ExportConfig): Result<Unit> {
+        val sourceId = activeSourceId.value ?: return Result.failure(Exception("No active profile"))
+        val source = musicSourceDao.getSourceById(sourceId) ?: return Result.failure(Exception("Profile not found"))
+
+        if (source.type != config.source.type || source.path != config.source.path || source.port != config.source.port) {
+            return Result.failure(Exception("Configuration source does not match active profile"))
+        }
+
+        config.playlists.forEach { playlistConfig ->
+            // Find or create playlist
+            var playlistEntity = playlistDao.getPlaylistByName(playlistConfig.name, sourceId, false)
+            if (playlistEntity == null) {
+                val newId = playlistDao.insertPlaylist(
+                    PlaylistEntity(
+                        sourceId = sourceId,
+                        name = playlistConfig.name,
+                        coverType = "vector",
+                        coverValue = "FeaturedPlayList"
+                    )
+                )
+                playlistEntity = playlistDao.getPlaylistById(newId.toInt())?.playlist
+            }
+
+            if (playlistEntity != null) {
+                playlistConfig.songs.forEachIndexed { index, songConfig ->
+                    val song = songDao.getSongByPath(songConfig.path, sourceId)
+                    if (song != null) {
+                        // Check if song already in playlist to avoid duplicates
+                        val existingRefs = playlistDao.getCrossRefsForPlaylist(playlistEntity.id)
+                        if (existingRefs.none { it.songId == song.id }) {
+                            playlistDao.insertPlaylistSongCrossRef(
+                                PlaylistSongCrossRef(
+                                    playlistId = playlistEntity.id,
+                                    songId = song.id,
+                                    order = index
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        return Result.success(Unit)
     }
 
     // Mappers
