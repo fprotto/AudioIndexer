@@ -2,23 +2,33 @@ package com.unitn.audioindexer.ui.screens.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.ui.zIndex
+import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +70,48 @@ fun QueueScreen(
     val queue = state.queue
     val currentSong = state.currentSong
 
+    val listState = rememberLazyListState()
+    var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+
+    val queueKeys = remember(queue) {
+        val occurrences = mutableMapOf<Int, Int>()
+        queue.map { song ->
+            val count = occurrences[song.id] ?: 0
+            occurrences[song.id] = count + 1
+            "${song.id}-$count"
+        }
+    }
+
+    LaunchedEffect(draggingItemIndex, dragOffset) {
+        val currentIdx = draggingItemIndex ?: return@LaunchedEffect
+        while (draggingItemIndex != null) {
+            val layoutInfo = listState.layoutInfo
+            val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == currentIdx } ?: break
+            val itemCenter = itemInfo.offset + itemInfo.size / 2 + dragOffset
+
+            val viewportHeight = layoutInfo.viewportEndOffset.toFloat()
+            val topThreshold = 100f
+            val bottomThreshold = viewportHeight - 100f
+
+            val scrollAmount = when {
+                itemCenter < topThreshold -> -15f
+                itemCenter > bottomThreshold -> 15f
+                else -> 0f
+            }
+
+            if (scrollAmount != 0f) {
+                listState.scrollBy(scrollAmount)
+                // When we scroll, we need to adjust the dragOffset to keep the item under the finger
+                // since its absolute position in the viewport changed but the finger didn't
+                dragOffset += scrollAmount
+                delay(10.milliseconds)
+            } else {
+                delay(16.milliseconds)
+            }
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -86,20 +138,69 @@ fun QueueScreen(
             }
 
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize()
             ) {
-                itemsIndexed(queue) { index, song ->
-                    QueueItem(
-                        song = song,
-                        isCurrent = song.id == currentSong?.id,
-                        onRemove = { viewModel.removeQueueItem(index) },
-                        onClick = { viewModel.playQueueItem(index) }
-                    )
-                    if (index < queue.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                itemsIndexed(queue, key = { index, _ -> queueKeys.getOrElse(index) { index } }) { index, song ->
+                    val isDragging = draggingItemIndex == index
+                    val zIndex = if (isDragging) 1f else 0f
+
+                    Column(
+                        modifier = Modifier
+                            .animateItem()
+                            .zIndex(zIndex)
+                            .graphicsLayer {
+                                translationY = if (isDragging) dragOffset else 0f
+                                alpha = if (isDragging) 0.8f else 1f
+                            }
+                    ) {
+                        QueueItem(
+                            song = song,
+                            isCurrent = song.id == currentSong?.id,
+                            onRemove = { viewModel.removeQueueItem(index) },
+                            onClick = { viewModel.playQueueItem(index) },
+                            dragHandleModifier = Modifier.pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDragStart = { draggingItemIndex = index },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        dragOffset += dragAmount.y
+
+                                        val currentIdx = draggingItemIndex ?: return@detectDragGestures
+                                        val itemInfo = listState.layoutInfo.visibleItemsInfo
+                                            .find { it.index == currentIdx } ?: return@detectDragGestures
+                                        val itemCenter = itemInfo.offset + itemInfo.size / 2 + dragOffset
+
+                                        val targetItem = listState.layoutInfo.visibleItemsInfo
+                                            .find { item ->
+                                                itemCenter.toInt() in item.offset..(item.offset + item.size) &&
+                                                        item.index != currentIdx
+                                            }
+
+                                        if (targetItem != null) {
+                                            val scrollOffset = itemInfo.offset
+                                            viewModel.moveQueueItem(currentIdx, targetItem.index)
+                                            draggingItemIndex = targetItem.index
+                                            dragOffset -= (targetItem.offset - scrollOffset)
+                                        }
+                                    },
+                                    onDragEnd = {
+                                        draggingItemIndex = null
+                                        dragOffset = 0f
+                                    },
+                                    onDragCancel = {
+                                        draggingItemIndex = null
+                                        dragOffset = 0f
+                                    }
+                                )
+                            }
                         )
+                        if (index < queue.size - 1) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -112,7 +213,9 @@ fun QueueItem(
     song: Song,
     isCurrent: Boolean,
     onRemove: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    dragHandleModifier: Modifier = Modifier
 ) {
     val backgroundColor = if (isCurrent) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
@@ -121,7 +224,7 @@ fun QueueItem(
     }
 
     ListItem(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(backgroundColor)
             .clickable(onClick = onClick),
@@ -178,7 +281,9 @@ fun QueueItem(
                 Icon(
                     Icons.Default.DragHandle,
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp),
+                    modifier = dragHandleModifier
+                        .size(24.dp)
+                        .padding(4.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
             }
