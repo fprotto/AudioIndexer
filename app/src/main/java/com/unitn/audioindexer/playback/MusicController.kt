@@ -163,18 +163,17 @@ class MusicController(
 
     fun playSongs(songs: List<Song>, startIndex: Int = 0, shuffle: Boolean = false) {
         val player = controller ?: return
-        val mediaItems = songs.map { it.toMediaItem() }
+        val mediaItems =
+            if (shuffle)
+                songs.shuffled().map { it.toMediaItem() }
+            else
+                songs.map { it.toMediaItem() }
+
         player.setMediaItems(mediaItems)
         player.shuffleModeEnabled = shuffle
         player.prepare()
         
-        val actualStartIndex = if (shuffle && startIndex == 0 && songs.isNotEmpty()) {
-            (songs.indices).random()
-        } else {
-            startIndex
-        }
-        
-        player.seekTo(actualStartIndex, 0)
+        player.seekTo(startIndex, 0)
         player.play()
     }
 
@@ -239,7 +238,7 @@ class MusicController(
             .setArtist(artistName)
             .setExtras(android.os.Bundle().apply {
                 putInt("id", id)
-                putString("coverType", when(val c = cover) {
+                putString("coverType", when(cover) {
                     is IconSource.VectorIcon -> "vector"
                     is IconSource.UriIcon -> "uri"
                 })
@@ -250,6 +249,7 @@ class MusicController(
                 putInt("releaseYear", releaseYear)
             })
             .build()
+
         return MediaItem.Builder()
             .setMediaId(id.toString())
             .setUri(path.toUri())
