@@ -26,6 +26,9 @@ interface ArtistDao {
     @Update
     suspend fun updateArtist(artist: ArtistEntity): Int
 
+    @Query("DELETE FROM artists WHERE sourceId = :sourceId")
+    suspend fun deleteArtistsBySource(sourceId: Int): Int
+
     @Delete
     suspend fun deleteArtist(artist: ArtistEntity): Int
 }

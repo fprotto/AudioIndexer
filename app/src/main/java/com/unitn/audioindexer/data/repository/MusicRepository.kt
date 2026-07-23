@@ -101,15 +101,25 @@ class MusicRepository(
 
     suspend fun getSourceById(id: Int): MusicSourceEntity? = musicSourceDao.getSourceById(id)
 
-    suspend fun addSource(type: String, path: String, port: Int? = null, name: String) {
-        val id = musicSourceDao.insertSource(MusicSourceEntity(type = type, path = path, port = port, name = name))
+    suspend fun addSource(type: String, path: String, port: Int? = null, name: String): Int {
+        val id = musicSourceDao.upsertSource(MusicSourceEntity(type = type, path = path, port = port, name = name))
         if (_activeSourceId.value == null) {
             _activeSourceId.value = id.toInt()
         }
+        return id.toInt()
     }
 
     suspend fun deleteSource(source: MusicSourceEntity) {
         musicSourceDao.deleteSource(source)
+    }
+
+    suspend fun updateSource(source: MusicSourceEntity) {
+        musicSourceDao.upsertSource(source)
+    }
+
+    suspend fun clearSongsForSource(sourceId: Int) {
+        artistDao.deleteArtistsBySource(sourceId)
+        playlistDao.deleteAlbumsBySource(sourceId)
     }
 
     suspend fun getArtistById(id: Int): Artist? = artistDao.getArtistById(id)?.toDomain()

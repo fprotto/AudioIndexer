@@ -57,6 +57,11 @@
     <string name="invalid_port">Porta non valida</string>
     <string name="local_source_name">Libreria Locale</string>
     <string name="add_profile">Aggiungi Profilo</string>
+    <string name="edit_profile">Modifica Profilo</string>
+    <string name="delete_profile_title">Elimina Profilo</string>
+    <string name="delete_profile_confirmation">Sei sicuro di voler eliminare il profilo \"%1$s\"? Tutti i dati associati verranno persi.</string>
+    <string name="resync_title">Server Modificato</string>
+    <string name="resync_confirmation">L\'indirizzo o la porta del server sono cambiati. Per evitare duplicati, tutte le canzoni di questa sorgente verranno rimosse e inizierà una nuova sincronizzazione. Procedere?</string>
     <plurals name="songs_count">
         <item quantity="one">%1$d canzone</item>
         <item quantity="other">%1$d canzoni</item>

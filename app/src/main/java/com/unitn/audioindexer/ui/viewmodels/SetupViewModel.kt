@@ -7,15 +7,11 @@ import kotlinx.coroutines.launch
 
 class SetupViewModel(private val repository: MusicRepository) : ViewModel() {
 
-    fun addLocalSource(uri: String) {
-        viewModelScope.launch {
-            repository.addSource(type = "LOCAL", path = uri, name = "Local Library")
-        }
+    suspend fun addLocalSource(uri: String): Int {
+        return repository.addSource(type = "LOCAL", path = uri, name = "Local Library")
     }
 
-    fun addRemoteSource(name: String, ip: String, port: Int) {
-        viewModelScope.launch {
-            repository.addSource(type = "REMOTE", path = ip, port = port, name = name)
-        }
+    suspend fun addRemoteSource(name: String, ip: String, port: Int): Int {
+        return repository.addSource(type = "REMOTE", path = ip, port = port, name = name)
     }
 }

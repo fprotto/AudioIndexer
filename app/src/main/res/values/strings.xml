@@ -57,6 +57,11 @@
     <string name="invalid_port">Invalid port</string>
     <string name="local_source_name">Local Library</string>
     <string name="add_profile">Add Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="delete_profile_title">Delete Profile</string>
+    <string name="delete_profile_confirmation">Are you sure you want to delete profile \"%1$s\"? All associated data will be lost.</string>
+    <string name="resync_title">Server Changed</string>
+    <string name="resync_confirmation">The server address or port has changed. To avoid duplicates, all songs from this source will be cleared and a new sync will start. Proceed?</string>
     <plurals name="songs_count">
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>

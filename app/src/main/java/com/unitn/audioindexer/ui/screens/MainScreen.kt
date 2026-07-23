@@ -39,12 +39,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,11 +51,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.collectAsState
+import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
+import com.unitn.audioindexer.ui.screens.setup.RemoteSetupDialog
+import androidx.core.os.ConfigurationCompat
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.core.os.ConfigurationCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.unitn.audioindexer.AudioIndexerApplication
@@ -91,6 +90,16 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val systemInDarkTheme = isSystemInDarkTheme()
+    
+    val allSources by settingsViewModel.allSources.collectAsState()
+    LaunchedEffect(allSources) {
+        if (allSources != null && allSources!!.isEmpty()) {
+            navController.navigate(Screen.Setup.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = { 
@@ -142,6 +151,9 @@ fun TopBar(
     var showMenu by remember { mutableStateOf(false) }
     var showLanguageMenu by remember { mutableStateOf(false) }
     var showProfileMenu by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf<MusicSourceEntity?>(null) }
+    var showDeleteDialog by remember { mutableStateOf<MusicSourceEntity?>(null) }
+    var showResyncDialog by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
 
     val exportLauncher = rememberLauncherForActivityResult(
@@ -283,13 +295,36 @@ fun TopBar(
                     val sources by settingsViewModel.allSources.collectAsState()
                     val activeId by settingsViewModel.activeSourceId.collectAsState()
 
-                    sources.forEach { source ->
+                    sources?.forEach { source ->
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     text = source.name,
                                     fontWeight = if (activeId == source.id) FontWeight.Bold else FontWeight.Normal
                                 )
+                            },
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = {
+                                        showProfileMenu = false
+                                        showEditDialog = source
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = stringResource(R.string.edit_profile)
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        showProfileMenu = false
+                                        showDeleteDialog = source
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = stringResource(R.string.menu_delete),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
                             },
                             onClick = {
                                 settingsViewModel.setActiveSource(source.id)
@@ -338,6 +373,66 @@ fun TopBar(
             }
         }
     )
+
+    showEditDialog?.let { source ->
+        RemoteSetupDialog(
+            initialSource = source,
+            onDismiss = { showEditDialog = null },
+            onSave = { name, ip, port ->
+                settingsViewModel.updateSource(
+                    source.copy(name = name, path = ip, port = port),
+                    source,
+                    onConfirmResync = { showResyncDialog = source.id }
+                )
+                showEditDialog = null
+            }
+        )
+    }
+
+    showDeleteDialog?.let { source ->
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            title = { Text(stringResource(R.string.delete_profile_title)) },
+            text = { Text(stringResource(R.string.delete_profile_confirmation, source.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    settingsViewModel.deleteSource(source)
+                    showDeleteDialog = null
+                }) {
+                    Text(stringResource(R.string.menu_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    showResyncDialog?.let { sourceId ->
+        AlertDialog(
+            onDismissRequest = { showResyncDialog = null },
+            title = { Text(stringResource(R.string.resync_title)) },
+            text = { Text(stringResource(R.string.resync_confirmation)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    settingsViewModel.clearSongsForSource(sourceId)
+                    showResyncDialog = null
+                }) {
+                    Text(stringResource(R.string.save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    settingsViewModel.syncSource(sourceId)
+                    showResyncDialog = null 
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 }
 
 @Composable

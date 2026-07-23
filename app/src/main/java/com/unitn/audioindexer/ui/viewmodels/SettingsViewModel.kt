@@ -27,13 +27,51 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
     var isDarkTheme by mutableStateOf<Boolean?>(null)
         private set
 
-    val allSources: StateFlow<List<MusicSourceEntity>> = repository.allSources
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allSources: StateFlow<List<MusicSourceEntity>?> = repository.allSources
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val activeSourceId: StateFlow<Int?> = repository.activeSourceId
 
     fun setActiveSource(id: Int) {
         repository.setActiveSource(id)
+    }
+
+    fun updateSource(updatedSource: MusicSourceEntity, oldSource: MusicSourceEntity, onConfirmResync: () -> Unit) {
+        viewModelScope.launch {
+            repository.updateSource(updatedSource)
+            if (updatedSource.type == "REMOTE" && (updatedSource.path != oldSource.path || updatedSource.port != oldSource.port)) {
+                onConfirmResync()
+            }
+        }
+    }
+
+    fun clearSongsForSource(sourceId: Int) {
+        viewModelScope.launch {
+            repository.clearSongsForSource(sourceId)
+            repository.syncRemoteSource(sourceId)
+        }
+    }
+
+    fun deleteSource(source: MusicSourceEntity) {
+        viewModelScope.launch {
+            val all = allSources.value ?: return@launch
+            val activeId = activeSourceId.value
+            
+            repository.deleteSource(source)
+            
+            if (activeId == source.id) {
+                val remaining = all.filter { it.id != source.id }
+                if (remaining.isNotEmpty()) {
+                    repository.setActiveSource(remaining.first().id)
+                } else {
+                    repository.setActiveSource(null)
+                }
+            }
+        }
+    }
+
+    fun syncSource(sourceId: Int) {
+        repository.syncRemoteSource(sourceId)
     }
 
     fun toggleTheme(systemInDarkTheme: Boolean) {

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.SetupViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SetupScreen(
@@ -48,6 +51,7 @@ fun SetupScreen(
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
     val viewModel: SetupViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val scope = rememberCoroutineScope()
 
     var showRemoteDialog by remember { mutableStateOf(false) }
 
@@ -60,8 +64,10 @@ fun SetupScreen(
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            viewModel.addLocalSource(it.toString())
-            onSetupComplete()
+            scope.launch {
+                viewModel.addLocalSource(it.toString())
+                onSetupComplete()
+            }
         }
     }
 
@@ -124,9 +130,11 @@ fun SetupScreen(
         RemoteSetupDialog(
             onDismiss = { showRemoteDialog = false },
             onSave = { name, ip, port ->
-                viewModel.addRemoteSource(name, ip, port)
-                showRemoteDialog = false
-                onSetupComplete()
+                scope.launch {
+                    viewModel.addRemoteSource(name, ip, port)
+                    showRemoteDialog = false
+                    onSetupComplete()
+                }
             }
         )
     }
@@ -134,16 +142,17 @@ fun SetupScreen(
 
 @Composable
 fun RemoteSetupDialog(
+    initialSource: MusicSourceEntity? = null,
     onDismiss: () -> Unit,
     onSave: (String, String, Int) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var ip by remember { mutableStateOf("") }
-    var port by remember { mutableStateOf("8080") }
+    var name by remember { mutableStateOf(initialSource?.name ?: "") }
+    var ip by remember { mutableStateOf(initialSource?.path ?: "") }
+    var port by remember { mutableStateOf(initialSource?.port?.toString() ?: "8080") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.remote_setup_title)) },
+        title = { Text(stringResource(if (initialSource == null) R.string.remote_setup_title else R.string.edit_profile)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
