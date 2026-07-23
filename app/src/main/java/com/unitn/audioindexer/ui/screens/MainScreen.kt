@@ -57,6 +57,7 @@ import androidx.core.os.ConfigurationCompat
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Sync
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.unitn.audioindexer.AudioIndexerApplication
@@ -305,6 +306,15 @@ fun TopBar(
                             },
                             trailingIcon = {
                                 Row {
+                                    IconButton(onClick = {
+                                        settingsViewModel.syncSource(source.id)
+                                        showProfileMenu = false
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Sync,
+                                            contentDescription = stringResource(R.string.force_sync)
+                                        )
+                                    }
                                     IconButton(onClick = {
                                         showProfileMenu = false
                                         showEditDialog = source

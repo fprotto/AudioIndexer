@@ -57,6 +57,7 @@
     <string name="invalid_port">Invalid port</string>
     <string name="local_source_name">Local Library</string>
     <string name="add_profile">Add Profile</string>
+    <string name="force_sync">Force a new sync</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="delete_profile_title">Delete Profile</string>
     <string name="delete_profile_confirmation">Are you sure you want to delete profile \"%1$s\"? All associated data will be lost.</string>

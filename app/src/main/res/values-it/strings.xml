@@ -57,6 +57,7 @@
     <string name="invalid_port">Porta non valida</string>
     <string name="local_source_name">Libreria Locale</string>
     <string name="add_profile">Aggiungi Profilo</string>
+    <string name="force_sync">Forza una nuova sincronizzazione</string>"
     <string name="edit_profile">Modifica Profilo</string>
     <string name="delete_profile_title">Elimina Profilo</string>
     <string name="delete_profile_confirmation">Sei sicuro di voler eliminare il profilo \"%1$s\"? Tutti i dati associati verranno persi.</string>
