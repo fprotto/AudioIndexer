@@ -40,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -58,6 +59,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Upload
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.unitn.audioindexer.AudioIndexerApplication
@@ -251,7 +253,7 @@ fun TopBar(
                     DropdownMenuItem(
                         leadingIcon = {
                             Icon(
-                                Icons.Default.ImportExport,
+                                Icons.Default.Download,
                                 contentDescription = stringResource(R.string.settings_import_config)
                             )
                         },
@@ -264,7 +266,7 @@ fun TopBar(
                     DropdownMenuItem(
                         leadingIcon = {
                             Icon(
-                                Icons.Default.ImportExport,
+                                Icons.Default.Upload,
                                 contentDescription = stringResource(R.string.settings_export_config)
                             )
                         },
