@@ -41,6 +41,8 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
             repository.updateSource(updatedSource)
             if (updatedSource.type == "REMOTE" && (updatedSource.path != oldSource.path || updatedSource.port != oldSource.port)) {
                 onConfirmResync()
+            } else if (updatedSource.type == "LOCAL" && updatedSource.path != oldSource.path) {
+                onConfirmResync()
             }
         }
     }
@@ -48,7 +50,7 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
     fun clearSongsForSource(sourceId: Int) {
         viewModelScope.launch {
             repository.clearSongsForSource(sourceId)
-            repository.syncRemoteSource(sourceId)
+            repository.syncSource(sourceId)
         }
     }
 
@@ -71,7 +73,7 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
     }
 
     fun syncSource(sourceId: Int) {
-        repository.syncRemoteSource(sourceId)
+        repository.syncSource(sourceId)
     }
 
     fun toggleTheme(systemInDarkTheme: Boolean) {

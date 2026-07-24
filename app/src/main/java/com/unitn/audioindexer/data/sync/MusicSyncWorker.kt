@@ -1,35 +1,38 @@
 package com.unitn.audioindexer.data.sync
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
-import com.unitn.audioindexer.AudioIndexerApplication
-import com.unitn.audioindexer.data.network.RemoteMusicApi
+import androidx.annotation.OptIn
+import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.MetadataRetriever
+import androidx.media3.extractor.metadata.flac.PictureFrame
 import androidx.media3.extractor.metadata.id3.ApicFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
-import androidx.media3.extractor.metadata.flac.PictureFrame
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import com.unitn.audioindexer.AudioIndexerApplication
+import com.unitn.audioindexer.data.network.RemoteMusicApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import androidx.annotation.OptIn
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import androidx.core.net.toUri
 
-class RemoteSyncWorker(
+class MusicSyncWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
@@ -42,32 +45,43 @@ class RemoteSyncWorker(
         if (sourceId == -1) return Result.failure()
 
         val source = database.musicSourceDao().getSourceById(sourceId) ?: return Result.failure()
-        if (source.type != "REMOTE") return Result.failure()
-
-        val baseUrl = "http://${source.path}:${source.port ?: 80}/"
         
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val api = retrofit.create(RemoteMusicApi::class.java)
-
         val semaphore = Semaphore(12)
         val dbMutex = Mutex()
         
         repository.setActiveSource(sourceId)
 
         return try {
-            syncFolder(api, "", sourceId, baseUrl, semaphore, dbMutex)
+            when (source.type) {
+                "REMOTE" -> {
+                    val baseUrl = "http://${source.path}:${source.port ?: 80}/"
+                    val retrofit = Retrofit.Builder()
+                        .baseUrl(baseUrl)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build()
+                    val api = retrofit.create(RemoteMusicApi::class.java)
+                    syncRemoteFolder(api, "", sourceId, baseUrl, semaphore, dbMutex)
+                }
+                "LOCAL" -> {
+                    val rootUri = source.path.toUri()
+                    val rootDoc = DocumentFile.fromTreeUri(applicationContext, rootUri)
+                    if (rootDoc != null && rootDoc.isDirectory) {
+                        syncLocalFolder(rootDoc, sourceId, semaphore, dbMutex)
+                    } else {
+                        Log.e("MusicSyncWorker", "Invalid local source path: ${source.path}")
+                        return Result.failure()
+                    }
+                }
+                else -> return Result.failure()
+            }
             Result.success()
         } catch (e: Exception) {
-            Log.e("RemoteSyncWorker", "Error syncing remote source", e)
+            Log.e("MusicSyncWorker", "Error syncing source", e)
             Result.retry()
         }
     }
 
-    private suspend fun syncFolder(
+    private suspend fun syncRemoteFolder(
         api: RemoteMusicApi,
         path: String,
         sourceId: Int,
@@ -85,24 +99,57 @@ class RemoteSyncWorker(
 
         for (dir in response.directories) {
             launch {
-                syncFolder(api, dir.path, sourceId, baseUrl, semaphore, dbMutex)
+                syncRemoteFolder(api, dir.path, sourceId, baseUrl, semaphore, dbMutex)
             }
         }
     }
 
+    private suspend fun syncLocalFolder(
+        folder: DocumentFile,
+        sourceId: Int,
+        semaphore: Semaphore,
+        dbMutex: Mutex
+    ): Unit = coroutineScope {
+        folder.listFiles().forEachIndexed { index, file ->
+            if (file.isDirectory) {
+                launch {
+                    syncLocalFolder(file, sourceId, semaphore, dbMutex)
+                }
+            } else if (isAudioFile(file)) {
+                launch {
+                    processFile(file.uri.toString(), file.name ?: "Unknown", sourceId, null, semaphore, dbMutex, index)
+                }
+            }
+        }
+    }
+
+    private fun isAudioFile(file: DocumentFile): Boolean {
+        val mime = file.type ?: return false
+        return mime.startsWith("audio/") || 
+               file.name?.endsWith(".mp3", true) == true ||
+               file.name?.endsWith(".flac", true) == true ||
+               file.name?.endsWith(".m4a", true) == true ||
+               file.name?.endsWith(".wav", true) == true ||
+               file.name?.endsWith(".ogg", true) == true
+    }
+
     @OptIn(UnstableApi::class)
     private suspend fun processFile(
-        fileUrl: String,
+        fileUrlOrUri: String,
         fileName: String,
         sourceId: Int,
-        baseUrl: String,
+        baseUrl: String?,
         semaphore: Semaphore,
         dbMutex: Mutex,
         fileIndex: Int
     ) {
-        val fullUrl = if (fileUrl.startsWith("http")) fileUrl else "$baseUrl${fileUrl.removePrefix("/")}"
+        val fullUrlOrUri = if (baseUrl != null) {
+            if (fileUrlOrUri.startsWith("http")) fileUrlOrUri else "$baseUrl${fileUrlOrUri.removePrefix("/")}"
+        } else {
+            fileUrlOrUri
+        }
         
-        val mediaItem = MediaItem.fromUri(fullUrl)
+        val mediaItem = MediaItem.fromUri(fullUrlOrUri)
         try {
             val trackGroups = semaphore.withPermit {
                 MetadataRetriever.retrieveMetadata(applicationContext, mediaItem).await()
@@ -173,10 +220,8 @@ class RemoteSyncWorker(
             val artworkPath = artwork?.let { repository.saveArtwork(it) }
 
             dbMutex.withLock {
-                // Check if song already exists (within the lock to be safe)
-                val existingSong = database.songDao().getSongByPath(fullUrl, sourceId)
+                val existingSong = database.songDao().getSongByPath(fullUrlOrUri, sourceId)
                 
-                // 1. Handle Artist
                 var artist = database.artistDao().getArtistByName(artistName, sourceId)
                 if (artist == null) {
                     val artistId = repository.insertArtist(artistName, "PersonOutline", mbid)
@@ -198,7 +243,6 @@ class RemoteSyncWorker(
                         artist = updatedArtist
                     }
                     
-                    // Always try to resolve image if it's still a vector icon
                     if (artist.propicType == "vector") {
                         repository.resolveArtistImage(artist.id)
                     }
@@ -206,20 +250,18 @@ class RemoteSyncWorker(
 
                 if (artist == null) return@withLock
 
-                // 2. Handle Song
                 val songId = existingSong?.id?.toLong()
                     ?: repository.insertSong(
                         title = title,
                         artistId = artist.id.toLong(),
                         year = year,
-                        source = "remote",
-                        path = fullUrl,
+                        source = if (baseUrl != null) "remote" else "local",
+                        path = fullUrlOrUri,
                         artistNameOverride = if (rawArtistName != artistName) rawArtistName else null,
                         coverType = if (artworkPath != null) "uri" else "vector",
                         coverValue = artworkPath ?: "MusicNote"
                     )
 
-                // 3. Handle Album
                 if (albumName != null) {
                     var album = database.playlistDao().getPlaylistByName(albumName, sourceId, isAlbum = true)
                     if (album == null) {
@@ -231,7 +273,6 @@ class RemoteSyncWorker(
                             releaseYear = year,
                             artistNameOverride = if (rawArtistName != artistName) rawArtistName else null
                         )
-                        // If we have artwork, set coverType to uri
                         if (artworkPath != null) {
                             val newAlbum = database.playlistDao().getPlaylistById(albumId.toInt())?.playlist
                             if (newAlbum != null) {
@@ -240,7 +281,6 @@ class RemoteSyncWorker(
                         }
                         album = database.playlistDao().getPlaylistById(albumId.toInt())?.playlist
                     } else if (artworkPath != null && album.coverType == "vector") {
-                        // Update album cover if it was default and we found artwork
                         repository.updatePlaylist(album.copy(coverType = "uri", coverValue = artworkPath))
                     }
 
@@ -251,7 +291,7 @@ class RemoteSyncWorker(
             }
 
         } catch (e: Exception) {
-            Log.e("RemoteSyncWorker", "Error processing file: $fullUrl", e)
+            Log.e("MusicSyncWorker", "Error processing file: $fullUrlOrUri", e)
         }
     }
 
@@ -275,7 +315,7 @@ class RemoteSyncWorker(
 
     private fun normalizeArtistName(name: String): String {
         val featuringSeparators = listOf(
-            " feat. ", " feat ", " featuring ", " ft. ", " ft ", " & "
+            " feat. ", " feat ", " featuring ", " ft. ", " ft ", " & ", ", "
         )
         
         var normalized = name

@@ -2,7 +2,6 @@ package com.unitn.audioindexer.playback
 
 import android.content.ComponentName
 import android.content.Context
-import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -48,9 +47,18 @@ class MusicController(
 
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private var progressJob: Job? = null
+    private var lastSourceId: Int? = null
 
     init {
         initializeController()
+        scope.launch {
+            repository.activeSourceId.collect { id ->
+                if (lastSourceId != null && lastSourceId != id) {
+                    resetPlayer()
+                }
+                lastSourceId = id
+            }
+        }
     }
 
     private fun initializeController() {
@@ -99,6 +107,13 @@ class MusicController(
                 }
             })
         }, MoreExecutors.directExecutor())
+    }
+
+    fun resetPlayer() {
+        val player = controller ?: return
+        player.stop()
+        player.clearMediaItems()
+        _state.value = PlaybackState()
     }
 
     private fun updateState() {

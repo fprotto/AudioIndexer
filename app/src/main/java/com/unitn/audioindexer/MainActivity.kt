@@ -52,10 +52,7 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 repository.activeSourceId.collect { id ->
                     if (id != null) {
-                        val source = repository.getSourceById(id)
-                        if (source?.type == "REMOTE") {
-                            repository.syncRemoteSource(id)
-                        }
+                        repository.syncSource(id)
                     }
                 }
             }

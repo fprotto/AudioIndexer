@@ -21,7 +21,7 @@ import com.unitn.audioindexer.data.database.entities.PlaylistEntity
 import com.unitn.audioindexer.data.database.entities.SongEntity
 import com.unitn.audioindexer.data.database.relations.PlaylistWithSongs
 import com.unitn.audioindexer.data.database.relations.SongWithArtist
-import com.unitn.audioindexer.data.sync.RemoteSyncWorker
+import com.unitn.audioindexer.data.sync.MusicSyncWorker
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.NetworkType
@@ -45,6 +45,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MusicRepository(
@@ -54,6 +57,8 @@ class MusicRepository(
     private val playlistDao: PlaylistDao,
     private val musicSourceDao: MusicSourceDao
 ) {
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     private val _activeSourceId = MutableStateFlow<Int?>(null)
     val activeSourceId: StateFlow<Int?> = _activeSourceId.asStateFlow()
 
@@ -259,21 +264,27 @@ class MusicRepository(
         }
     }
 
-    fun syncRemoteSource(sourceId: Int) {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+    fun syncSource(sourceId: Int) {
+        repositoryScope.launch {
+            val source = musicSourceDao.getSourceById(sourceId) ?: return@launch
+            
+            val constraintsBuilder = Constraints.Builder()
+            if (source.type == "REMOTE") {
+                constraintsBuilder.setRequiredNetworkType(NetworkType.CONNECTED)
+            }
+            val constraints = constraintsBuilder.build()
 
-        val syncData = Data.Builder()
-            .putInt("source_id", sourceId)
-            .build()
+            val syncData = Data.Builder()
+                .putInt("source_id", sourceId)
+                .build()
 
-        val syncRequest = OneTimeWorkRequestBuilder<RemoteSyncWorker>()
-            .setConstraints(constraints)
-            .setInputData(syncData)
-            .build()
+            val syncRequest = OneTimeWorkRequestBuilder<MusicSyncWorker>()
+                .setConstraints(constraints)
+                .setInputData(syncData)
+                .build()
 
-        WorkManager.getInstance(context).enqueue(syncRequest)
+            WorkManager.getInstance(context).enqueue(syncRequest)
+        }
     }
 
     suspend fun exportActiveSourceConfiguration(): ExportConfig? {
