@@ -21,7 +21,11 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("artistId"), Index("sourceId")]
+    indices = [
+        Index("artistId"),
+        Index("sourceId"),
+        Index(value = ["path", "sourceId"], unique = true)
+    ]
 )
 data class SongEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

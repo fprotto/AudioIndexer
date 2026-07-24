@@ -148,7 +148,13 @@ class MusicSyncWorker(
         } else {
             fileUrlOrUri
         }
-        
+
+        // Check if song already exists to avoid unnecessary remote metadata requests
+        val songExists = dbMutex.withLock {
+            database.songDao().getSongByPath(fullUrlOrUri, sourceId) != null
+        }
+        if (songExists) return
+
         val mediaItem = MediaItem.fromUri(fullUrlOrUri)
         try {
             val trackGroups = semaphore.withPermit {
