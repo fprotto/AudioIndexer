@@ -80,8 +80,8 @@ fun TracksScreen(
     val sortedSongs = remember(sortOrder, filteredSongs) {
         when (sortOrder) {
             SongSortOrder.TITLE -> filteredSongs.sortedBy { it.title.lowercase() }
-            SongSortOrder.ARTIST -> filteredSongs.sortedBy { it.artistName.lowercase() }
-            SongSortOrder.YEAR -> filteredSongs.sortedByDescending { it.releaseYear }
+            SongSortOrder.ARTIST -> filteredSongs.sortedWith(compareBy({ it.artistName.lowercase() }, { it.title.lowercase() }))
+            SongSortOrder.YEAR -> filteredSongs.sortedWith(compareBy({ it.releaseYear }, { it.artistName.lowercase() }, { it.title.lowercase() }))
         }
     }
 
