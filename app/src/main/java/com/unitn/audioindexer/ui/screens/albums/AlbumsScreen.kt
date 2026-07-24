@@ -318,7 +318,7 @@ fun AlbumItem(
             supportingContent = {
                 Text(
                     text = album.artist.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -507,8 +507,6 @@ fun AlbumDetailScreen(
                     onNavigateBack = onNavigateBack,
                     isLandscape = true,
                     onPlayClick = { viewModel.playAlbum(currentAlbum) },
-                    onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) },
-                    onAddToPlaylistClick = { showAddToPlaylistDialogForAlbum = currentAlbum },
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
@@ -540,8 +538,6 @@ fun AlbumDetailScreen(
                         songCount = songCount,
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playAlbum(currentAlbum) },
-                        onAddToQueue = { viewModel.addAlbumToQueue(currentAlbum) },
-                        onAddToPlaylistClick = { showAddToPlaylistDialogForAlbum = currentAlbum }
                     )
                 }
                 itemsIndexed(currentAlbum.songs) { index, song ->
@@ -564,8 +560,6 @@ private fun AlbumHeader(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
     onPlayClick: () -> Unit,
-    onAddToQueue: () -> Unit = {},
-    onAddToPlaylistClick: () -> Unit = {},
     isLandscape: Boolean = false
 ) {
     Box(
@@ -659,6 +653,16 @@ private fun AlbumHeader(
                         append("  ·  ")
                         append("${album.releaseYear}")
                     },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // Total duration row
+                val totalDurationMs = album.songs.sumOf { it.duration }
+                val minutes = totalDurationMs / (1000 * 60)
+                val seconds = (totalDurationMs / 1000) % 60
+                Text(
+                    text = "%d:%02d".format(minutes, seconds),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

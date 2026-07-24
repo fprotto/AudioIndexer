@@ -37,6 +37,7 @@ data class SongEntity(
     val coverType: String = "vector",
     val coverValue: String = "MusicNote",
     val playCount: Int = 0,
+    val duration: Long = 0, // Duration in milliseconds
     val source: String, // e.g., "local", "remote_server_1"
     val path: String // URI or File path
 )

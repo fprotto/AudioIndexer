@@ -148,7 +148,8 @@ class MusicRepository(
         path: String,
         artistNameOverride: String? = null,
         coverType: String = "vector",
-        coverValue: String = "MusicNote"
+        coverValue: String = "MusicNote",
+        duration: Long = 0
     ): Long {
         val sourceId = activeSourceId.value ?: return -1
         return songDao.insertSong(
@@ -161,7 +162,8 @@ class MusicRepository(
                 source = source,
                 path = path,
                 coverType = coverType,
-                coverValue = coverValue
+                coverValue = coverValue,
+                duration = duration
             )
         )
     }
@@ -387,6 +389,7 @@ class MusicRepository(
             cover = iconSource,
             path = song.path,
             releaseYear = song.releaseYear,
+            duration = song.duration,
             playCount = song.playCount,
             playlistOrder = playlistOrder
         )

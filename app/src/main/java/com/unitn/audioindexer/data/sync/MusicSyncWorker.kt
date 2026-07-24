@@ -1,7 +1,6 @@
 package com.unitn.audioindexer.data.sync
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.documentfile.provider.DocumentFile
@@ -164,6 +163,22 @@ class MusicSyncWorker(
             var year = 0
             var artwork: ByteArray? = null
             var mbid: String? = null
+            var durationMs: Long = 0
+            
+            val mmr = android.media.MediaMetadataRetriever()
+            try {
+                if (baseUrl != null) {
+                    mmr.setDataSource(fullUrlOrUri, HashMap<String, String>())
+                } else {
+                    mmr.setDataSource(applicationContext, fullUrlOrUri.toUri())
+                }
+                durationMs = mmr.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0
+            } catch (e: Exception) {
+                Log.e("MusicSyncWorker", "Error retrieving duration for $fullUrlOrUri", e)
+            } finally {
+                mmr.release()
+            }
+
             val metadataBuilder = MediaMetadata.Builder()
 
             for (i in 0 until trackGroups.length) {
@@ -265,7 +280,8 @@ class MusicSyncWorker(
                         path = fullUrlOrUri,
                         artistNameOverride = if (rawArtistName != artistName) rawArtistName else null,
                         coverType = if (artworkPath != null) "uri" else "vector",
-                        coverValue = artworkPath ?: "MusicNote"
+                        coverValue = artworkPath ?: "MusicNote",
+                        duration = durationMs
                     )
 
                 if (albumName != null) {

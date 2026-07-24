@@ -8,6 +8,7 @@ data class Song(
     val cover: IconSource,
     val path: String,
     val releaseYear: Int,
+    val duration: Long = 0, // Duration in milliseconds
     val playCount: Int = 0,
     val playlistOrder: Int = 0
 )
