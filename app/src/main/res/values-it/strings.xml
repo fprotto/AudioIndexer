@@ -16,6 +16,7 @@
     <string name="up_next_uppercase">SUCCESSIVE</string>
     <string name="menu_add_to_queue">Aggiungi alla coda</string>
     <string name="menu_add_to_playlist">Aggiungi alla playlist</string>
+    <string name="menu_remove_from_playlist">Rimuovi dalla playlist</string>
     <string name="menu_delete_playlist">Elimina playlist</string>
     <string name="menu_rename">Rinomina</string>
     <string name="menu_properties">Proprietà</string>

@@ -304,7 +304,8 @@ fun ArtistDetailScreen(
                     SongCard(
                         song = song, 
                         onClick = { viewModel.playSong(topSongs, index) },
-                        onAddToQueue = { viewModel.addToQueue(song) }
+                        onAddToQueue = { viewModel.addToQueue(song) },
+                        onDelete = { viewModel.deleteSong(song) }
                     )
                 }
             }

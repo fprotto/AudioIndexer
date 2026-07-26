@@ -197,6 +197,11 @@ class MusicRepository(
         songDao.incrementPlayCount(songId)
     }
 
+    suspend fun deleteSong(songId: Int) {
+        songDao.markSongAsDeleted(songId)
+        playlistDao.removeSongFromAllPlaylists(songId)
+    }
+
     suspend fun fetchAndCacheLyrics(songId: Int, artist: String, title: String) = withContext(Dispatchers.IO) {
         val songRelation = songDao.getSongById(songId) ?: return@withContext
         val song = songRelation.song
@@ -419,7 +424,8 @@ class MusicRepository(
             duration = song.duration,
             playCount = song.playCount,
             playlistOrder = playlistOrder,
-            lyrics = song.lyrics
+            lyrics = song.lyrics,
+            isDeleted = song.isDeleted
         )
     }
 

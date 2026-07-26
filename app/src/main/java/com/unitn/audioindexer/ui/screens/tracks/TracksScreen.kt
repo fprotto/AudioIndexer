@@ -131,7 +131,8 @@ fun TracksScreen(
                 sortedSongs,
                 onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
                 onAddToQueue = { song -> viewModel.addToQueue(song) },
-                onAddToPlaylist = { song -> showAddToPlaylistDialog = song }
+                onAddToPlaylist = { song -> showAddToPlaylistDialog = song },
+                onDelete = { song -> viewModel.deleteSong(song) }
             )
         }
     }
@@ -253,7 +254,8 @@ fun TracksSection(
     songs: List<Song>,
     onSongClick: (Int) -> Unit,
     onAddToQueue: (Song) -> Unit,
-    onAddToPlaylist: (Song) -> Unit
+    onAddToPlaylist: (Song) -> Unit,
+    onDelete: (Song) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         songs.forEachIndexed { index, song ->
@@ -261,7 +263,8 @@ fun TracksSection(
                 song, 
                 onClick = { onSongClick(index) },
                 onAddToQueue = { onAddToQueue(song) },
-                onAddToPlaylist = { onAddToPlaylist(song) }
+                onAddToPlaylist = { onAddToPlaylist(song) },
+                onDelete = { onDelete(song) }
             )
         }
     }

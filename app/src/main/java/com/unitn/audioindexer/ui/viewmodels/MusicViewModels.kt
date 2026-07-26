@@ -35,6 +35,12 @@ class TracksViewModel(
             repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
         }
     }
+
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            repository.deleteSong(song.id)
+        }
+    }
 }
 
 class ArtistsViewModel(
@@ -67,6 +73,12 @@ class ArtistsViewModel(
             songs.forEach {
                 repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
             }
+        }
+    }
+
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            repository.deleteSong(song.id)
         }
     }
 }
@@ -105,6 +117,12 @@ class AlbumsViewModel(
             songs.forEach {
                 repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
             }
+        }
+    }
+
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            repository.deleteSong(song.id)
         }
     }
 }
@@ -167,6 +185,12 @@ class PlaylistsViewModel(
     fun removeSongFromPlaylist(playlistId: Int, songId: Int) {
         viewModelScope.launch {
             repository.removeSongFromPlaylist(playlistId, songId)
+        }
+    }
+
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            repository.deleteSong(song.id)
         }
     }
 }

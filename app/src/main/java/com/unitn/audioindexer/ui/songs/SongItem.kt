@@ -45,7 +45,8 @@ fun SongCard(
     onClick: () -> Unit = {},
     onAddToQueue: () -> Unit = {},
     onAddToPlaylist: () -> Unit = {},
-    onRemoveFromPlaylist: (() -> Unit)? = null
+    onRemoveFromPlaylist: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -168,14 +169,39 @@ fun SongCard(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
+                                        contentDescription = stringResource(R.string.menu_remove_from_playlist),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        stringResource(R.string.menu_remove_from_playlist),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                               },
+                                onClick = {
+                                    showMenu = false
+                                    onRemoveFromPlaylist()
+                                }
+                            )
+                        } else if (onDelete != null) {
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
                                         contentDescription = stringResource(R.string.menu_delete),
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                 },
-                                text = { Text(stringResource(R.string.menu_delete)) },
+                                text = {
+                                    Text(
+                                        stringResource(R.string.menu_delete),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                },
                                 onClick = {
                                     showMenu = false
-                                    onRemoveFromPlaylist()
+                                    onDelete()
                                 }
                             )
                         }

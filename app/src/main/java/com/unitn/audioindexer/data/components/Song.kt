@@ -11,5 +11,6 @@ data class Song(
     val duration: Long = 0, // Duration in milliseconds
     val playCount: Int = 0,
     val playlistOrder: Int = 0,
-    val lyrics: String? = null
+    val lyrics: String? = null,
+    val isDeleted: Boolean = false
 )

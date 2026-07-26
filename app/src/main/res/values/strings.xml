@@ -16,6 +16,7 @@
     <string name="up_next_uppercase">UP NEXT</string>
     <string name="menu_add_to_queue">Add to queue</string>
     <string name="menu_add_to_playlist">Add to playlist</string>
+    <string name="menu_remove_from_playlist">Remove from playlist</string>
     <string name="menu_delete_playlist">Delete playlist</string>
     <string name="menu_rename">Rename</string>
     <string name="menu_properties">Properties</string>

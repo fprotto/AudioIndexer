@@ -14,11 +14,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SongDao {
     @Transaction
-    @Query("SELECT * FROM songs WHERE sourceId = :sourceId")
+    @Query("SELECT * FROM songs WHERE sourceId = :sourceId AND isDeleted = 0")
     fun getSongsBySource(sourceId: Int): Flow<List<SongWithArtist>>
 
     @Transaction
-    @Query("SELECT * FROM songs WHERE id = :id")
+    @Query("SELECT * FROM songs WHERE id = :id AND isDeleted = 0")
     suspend fun getSongById(id: Int): SongWithArtist?
 
     @Query("SELECT * FROM songs WHERE path = :path AND sourceId = :sourceId")
@@ -38,4 +38,7 @@ interface SongDao {
 
     @Delete
     suspend fun deleteSong(song: SongEntity): Int
+
+    @Query("UPDATE songs SET isDeleted = 1 WHERE id = :songId")
+    suspend fun markSongAsDeleted(songId: Int)
 }

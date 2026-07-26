@@ -40,5 +40,6 @@ data class SongEntity(
     val duration: Long = 0, // Duration in milliseconds
     val source: String, // e.g., "local", "remote_server_1"
     val path: String, // URI or File path
-    val lyrics: String? = null
+    val lyrics: String? = null,
+    val isDeleted: Boolean = false
 )
