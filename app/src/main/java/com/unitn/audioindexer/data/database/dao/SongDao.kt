@@ -33,6 +33,9 @@ interface SongDao {
     @Update
     suspend fun updateSong(song: SongEntity): Int
 
+    @Query("UPDATE songs SET lyrics = :lyrics WHERE id = :songId")
+    suspend fun updateLyrics(songId: Int, lyrics: String?)
+
     @Delete
     suspend fun deleteSong(song: SongEntity): Int
 }

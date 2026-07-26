@@ -162,7 +162,7 @@ class MusicSyncWorker(
             
             var year = 0
             var artwork: ByteArray? = null
-            var mbid: String? = null
+            var artistMbid: String? = null
             var durationMs: Long = 0
             
             val mmr = android.media.MediaMetadataRetriever()
@@ -202,7 +202,7 @@ class MusicSyncWorker(
                                     }
                                     
                                     if (entry.id == "TXXX" && entry.description?.contains("MusicBrainz Artist Id", ignoreCase = true) == true) {
-                                        mbid = entry.values.firstOrNull()?.split(";")?.firstOrNull()?.trim()
+                                        artistMbid = entry.values.firstOrNull()?.split(";")?.firstOrNull()?.trim()
                                     }
                                 }
                                 is VorbisComment -> {
@@ -216,7 +216,7 @@ class MusicSyncWorker(
                                     }
                                     
                                     if (entry.key.equals("MUSICBRAINZ_ARTISTID", ignoreCase = true)) {
-                                        mbid = entry.value.split(";").firstOrNull()?.trim()
+                                        artistMbid = entry.value.split(";").firstOrNull()?.trim()
                                     }
                                 }
                                 is ApicFrame -> if (artwork == null) artwork = entry.pictureData
@@ -245,7 +245,7 @@ class MusicSyncWorker(
                 
                 var artist = database.artistDao().getArtistByName(artistName, sourceId)
                 if (artist == null) {
-                    val artistId = repository.insertArtist(artistName, "PersonOutline", mbid)
+                    val artistId = repository.insertArtist(artistName, "PersonOutline", artistMbid)
                     artist = database.artistDao().getArtistById(artistId.toInt())
                     if (artist != null) {
                         repository.resolveArtistImage(artist.id)
@@ -254,8 +254,8 @@ class MusicSyncWorker(
                     var needsUpdate = false
                     var updatedArtist = artist
                     
-                    if (mbid != null && artist.mbid == null) {
-                        updatedArtist = updatedArtist.copy(mbid = mbid)
+                    if (artistMbid != null && artist.mbid == null) {
+                        updatedArtist = updatedArtist.copy(mbid = artistMbid)
                         needsUpdate = true
                     }
                     
@@ -310,6 +310,8 @@ class MusicSyncWorker(
                         repository.addSongToPlaylist(album.id.toLong(), songId, trackNumber)
                     }
                 }
+
+                repository.fetchAndCacheLyrics(songId.toInt(), artistName, title)
             }
 
         } catch (e: Exception) {

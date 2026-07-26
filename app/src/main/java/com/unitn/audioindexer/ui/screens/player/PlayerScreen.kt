@@ -19,9 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -30,8 +29,6 @@ import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,7 +51,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,6 +79,7 @@ fun PlayerScreen(
     ),
     onBackClick: () -> Unit = {},
     onQueueClick: () -> Unit = {},
+    onLyricsClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val configuration = LocalConfiguration.current
@@ -187,6 +184,7 @@ fun PlayerScreen(
 
                     BottomActions(
                         onQueueClick = onQueueClick,
+                        onLyricsClick = onLyricsClick,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -226,7 +224,10 @@ fun PlayerScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                BottomActions(onQueueClick = onQueueClick)
+                BottomActions(
+                    onQueueClick = onQueueClick,
+                    onLyricsClick = onLyricsClick
+                )
             }
         }
     }
@@ -428,6 +429,7 @@ private fun PlaybackControls(
 @Composable
 private fun BottomActions(
     onQueueClick: () -> Unit,
+    onLyricsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -438,6 +440,14 @@ private fun BottomActions(
             Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.up_next_uppercase))
+        }
+        
+        Spacer(modifier = Modifier.width(16.dp))
+
+        TextButton(onClick = onLyricsClick) {
+            Icon(Icons.Default.Description, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.lyrics).uppercase())
         }
     }
 }

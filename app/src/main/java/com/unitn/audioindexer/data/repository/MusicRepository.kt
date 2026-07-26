@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import com.unitn.audioindexer.data.network.AudioDbApi
+import com.unitn.audioindexer.data.network.LyricsOvhApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.Dispatchers
@@ -101,6 +102,12 @@ class MusicRepository(
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(AudioDbApi::class.java)
+
+    private val lyricsOvhApi = Retrofit.Builder()
+        .baseUrl("https://api.lyrics.ovh/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(LyricsOvhApi::class.java)
 
     suspend fun getSourceCount(): Int = musicSourceDao.getSourceCount()
 
@@ -188,6 +195,26 @@ class MusicRepository(
 
     suspend fun incrementPlayCount(songId: Int) {
         songDao.incrementPlayCount(songId)
+    }
+
+    suspend fun fetchAndCacheLyrics(songId: Int, artist: String, title: String) = withContext(Dispatchers.IO) {
+        val songRelation = songDao.getSongById(songId) ?: return@withContext
+        val song = songRelation.song
+        
+        if (song.lyrics != null) return@withContext
+
+        try {
+            val lyricsResponse = lyricsOvhApi.getLyrics(artist, title)
+            songDao.updateLyrics(songId, lyricsResponse.lyrics)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 404) {
+                songDao.updateLyrics(songId, "")
+            } else {
+                Log.e("MusicRepository", "Error fetching lyrics", e)
+            }
+        } catch (e: Exception) {
+            Log.e("MusicRepository", "Error fetching lyrics", e)
+        }
     }
 
     fun saveArtwork(artwork: ByteArray): String? {
@@ -391,7 +418,8 @@ class MusicRepository(
             releaseYear = song.releaseYear,
             duration = song.duration,
             playCount = song.playCount,
-            playlistOrder = playlistOrder
+            playlistOrder = playlistOrder,
+            lyrics = song.lyrics
         )
     }
 

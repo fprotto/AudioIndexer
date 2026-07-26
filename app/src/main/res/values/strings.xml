@@ -69,4 +69,6 @@
     </plurals>
     <string name="playlist_deletion_confirmation">Are you sure you want to delete \"%1$s\"?</string>
     <string name="custom_order">Custom order</string>
+    <string name="lyrics">Lyrics</string>
+    <string name="no_lyrics_found">No lyrics available</string>
 </resources>

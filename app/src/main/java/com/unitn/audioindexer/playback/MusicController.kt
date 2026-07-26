@@ -262,6 +262,7 @@ class MusicController(
                     is IconSource.UriIcon -> c.uri
                 })
                 putInt("releaseYear", releaseYear)
+                putString("lyrics", lyrics)
             })
             .build()
 
@@ -281,6 +282,7 @@ class MusicController(
                     else IconSource.VectorIcon(coverValue.ifEmpty { "MusicNote" })
         val artist = com.unitn.audioindexer.data.components.Artist(0, metadata.artist?.toString() ?: "Unknown", IconSource.VectorIcon("PersonOutline"))
         val artistName = artist.name
+        val lyrics = extras?.getString("lyrics")
 
         return Song(
             id = mediaId.toInt(),
@@ -289,7 +291,8 @@ class MusicController(
             artist = artist,
             cover = cover,
             path = requestMetadata.mediaUri?.toString() ?: "",
-            releaseYear = extras?.getInt("releaseYear") ?: 0
+            releaseYear = extras?.getInt("releaseYear") ?: 0,
+            lyrics = lyrics
         )
     }
 }

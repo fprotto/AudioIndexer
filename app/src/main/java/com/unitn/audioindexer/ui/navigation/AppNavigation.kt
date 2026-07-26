@@ -10,6 +10,7 @@ import com.unitn.audioindexer.ui.screens.albums.AlbumDetailScreen
 import com.unitn.audioindexer.ui.screens.albums.AlbumsScreen
 import com.unitn.audioindexer.ui.screens.artists.ArtistDetailScreen
 import com.unitn.audioindexer.ui.screens.artists.ArtistsScreen
+import com.unitn.audioindexer.ui.screens.player.LyricsScreen
 import com.unitn.audioindexer.ui.screens.player.PlayerScreen
 import com.unitn.audioindexer.ui.screens.player.QueueScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
@@ -83,12 +84,19 @@ fun AppNavigation(
         composable(Screen.Player.route) {
             PlayerScreen(
                 onBackClick = navController::popBackStack,
-                onQueueClick = { navController.navigate(Screen.Queue.route) }
+                onQueueClick = { navController.navigate(Screen.Queue.route) },
+                onLyricsClick = { navController.navigate(Screen.Lyrics.route) }
             )
         }
 
         composable(Screen.Queue.route) {
             QueueScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Lyrics.route) {
+            LyricsScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

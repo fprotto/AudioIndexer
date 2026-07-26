@@ -19,5 +19,6 @@ sealed class Screen(val route: String) {
     object Tracks : Screen("tracks")
     object Player : Screen("player")
     object Queue : Screen("queue")
+    object Lyrics : Screen("lyrics")
     object Setup : Screen("setup")
 }

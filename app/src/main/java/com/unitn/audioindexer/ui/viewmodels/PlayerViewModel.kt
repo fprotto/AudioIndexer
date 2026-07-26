@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
@@ -23,6 +24,7 @@ data class PlayerUiState(
     val durationText: String = "0:00",
     val isShuffle: Boolean = false,
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val lyrics: String? = null
 )
 
 class PlayerViewModel(
@@ -65,6 +67,7 @@ class PlayerViewModel(
     }
 
     private fun PlaybackState.toUiState(): PlayerUiState {
+        Log.i("CurrentSong", currentSong.toString())
         return PlayerUiState(
             currentSong = currentSong,
             currentSongTitle = currentSong?.title ?: "Unknown",
@@ -74,7 +77,8 @@ class PlayerViewModel(
             positionText = formatTime(progress),
             durationText = formatTime(duration),
             isShuffle = isShuffle,
-            repeatMode = repeatMode
+            repeatMode = repeatMode,
+            lyrics = currentSong?.lyrics
         )
     }
 
