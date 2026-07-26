@@ -21,6 +21,10 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE id = :id AND isDeleted = 0")
     suspend fun getSongById(id: Int): SongWithArtist?
 
+    @Transaction
+    @Query("SELECT * FROM songs WHERE artistId = :artistId AND isDeleted = 0")
+    fun getSongsByArtist(artistId: Int): Flow<List<SongWithArtist>>
+
     @Query("SELECT * FROM songs WHERE path = :path AND sourceId = :sourceId")
     suspend fun getSongByPath(path: String, sourceId: Int): SongEntity?
 

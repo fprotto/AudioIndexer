@@ -138,6 +138,11 @@ class MusicRepository(
 
     suspend fun getSongById(id: Int): Song? = songDao.getSongById(id)?.toDomain()
 
+    fun getSongsByArtist(artistId: Int): Flow<List<Song>> =
+        songDao.getSongsByArtist(artistId).map { relations ->
+            relations.map { it.toDomain() }
+        }
+
     suspend fun getPlaylistById(id: Int): Playlist? = playlistDao.getPlaylistById(id)?.toDomain()
 
     suspend fun getAlbumById(id: Int): Album? = playlistDao.getPlaylistById(id)?.toAlbumDomain()

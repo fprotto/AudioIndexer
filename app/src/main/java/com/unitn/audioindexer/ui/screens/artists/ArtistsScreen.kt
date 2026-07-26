@@ -20,13 +20,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AddToQueue
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -52,7 +46,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.unitn.audioindexer.R
+import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.Artist
+import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.MiniPlayer
@@ -65,10 +61,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
-import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.ui.viewmodels.ArtistsViewModel
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOf
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import androidx.compose.foundation.shape.CircleShape
@@ -231,6 +228,15 @@ fun ArtistDetailScreen(
     var artist by remember { mutableStateOf<Artist?>(null) }
     var artistAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }
     
+    val allArtistSongs by remember(id) {
+        if (id != null) {
+            repository.getSongsByArtist(id)
+                .map { songs -> songs.sortedByDescending { it.playCount } }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
+    
     LaunchedEffect(id) {
         if (id != null) {
             artist = repository.getArtistById(id)
@@ -240,9 +246,7 @@ fun ArtistDetailScreen(
 
     val currentArtist = artist ?: return
 
-    val topSongs = artistAlbums.flatMap { it.songs }
-        .sortedByDescending { it.playCount }
-        .take(5)
+    val topSongs = allArtistSongs.take(5)
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -303,7 +307,7 @@ fun ArtistDetailScreen(
                 itemsIndexed(topSongs) { index, song ->
                     SongCard(
                         song = song, 
-                        onClick = { viewModel.playSong(topSongs, index) },
+                        onClick = { viewModel.playSong(allArtistSongs, index) },
                         onAddToQueue = { viewModel.addToQueue(song) },
                         onDelete = { viewModel.deleteSong(song) }
                     )
