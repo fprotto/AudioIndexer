@@ -440,6 +440,7 @@ fun PlaylistDetailScreen(
                             onClick = { viewModel.playSong(sortedSongs, index) },
                             onAddToQueue = { viewModel.addToQueue(song) },
                             onAddToPlaylist = { showAddToPlaylistDialog = song },
+                            onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                             onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) },
                             onDelete = { viewModel.deleteSong(song) }
                         )
@@ -473,6 +474,7 @@ fun PlaylistDetailScreen(
                         onClick = { viewModel.playSong(sortedSongs, index) },
                         onAddToQueue = { viewModel.addToQueue(song) },
                         onAddToPlaylist = { showAddToPlaylistDialog = song },
+                        onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                         onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) },
                         onDelete = { viewModel.deleteSong(song) }
                     )

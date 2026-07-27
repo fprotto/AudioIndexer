@@ -20,6 +20,14 @@
     <string name="menu_delete_playlist">Delete playlist</string>
     <string name="menu_rename">Rename</string>
     <string name="menu_properties">Properties</string>
+    <string name="song_properties_title">Song Properties</string>
+    <string name="property_title">Title</string>
+    <string name="property_artist">Artist</string>
+    <string name="property_album">Album</string>
+    <string name="property_year">Release Year</string>
+    <string name="property_duration">Duration</string>
+    <string name="property_path">File Path</string>
+    <string name="property_play_count">Play Count</string>
     <string name="menu_delete">Delete</string>
     <string name="more_options">More options</string>
     <string name="settings">Settings</string>

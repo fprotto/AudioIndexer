@@ -35,6 +35,7 @@ import com.unitn.audioindexer.R
 import androidx.navigation.NavController
 import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.ui.screens.MainScreen
+import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.songs.SongCard
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
@@ -132,6 +133,7 @@ fun TracksScreen(
                 onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
                 onAddToQueue = { song -> viewModel.addToQueue(song) },
                 onAddToPlaylist = { song -> showAddToPlaylistDialog = song },
+                onPropertiesClick = { song -> navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                 onDelete = { song -> viewModel.deleteSong(song) }
             )
         }
@@ -255,6 +257,7 @@ fun TracksSection(
     onSongClick: (Int) -> Unit,
     onAddToQueue: (Song) -> Unit,
     onAddToPlaylist: (Song) -> Unit,
+    onPropertiesClick: (Song) -> Unit,
     onDelete: (Song) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -264,6 +267,7 @@ fun TracksSection(
                 onClick = { onSongClick(index) },
                 onAddToQueue = { onAddToQueue(song) },
                 onAddToPlaylist = { onAddToPlaylist(song) },
+                onPropertiesClick = { onPropertiesClick(song) },
                 onDelete = { onDelete(song) }
             )
         }

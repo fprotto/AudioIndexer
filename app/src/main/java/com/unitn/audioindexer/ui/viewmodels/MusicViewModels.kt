@@ -10,8 +10,10 @@ import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.repository.MusicRepository
 import com.unitn.audioindexer.playback.MusicController
 import com.unitn.audioindexer.playback.PlaybackState
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -229,6 +231,19 @@ class QueueViewModel(private val musicController: MusicController) : ViewModel()
     }
 }
 
+class SongPropertiesViewModel(
+    private val repository: MusicRepository
+) : ViewModel() {
+    private val _song = MutableStateFlow<Song?>(null)
+    val song: StateFlow<Song?> = _song.asStateFlow()
+
+    fun loadSong(id: Int) {
+        viewModelScope.launch {
+            _song.value = repository.getSongById(id)
+        }
+    }
+}
+
 class MusicViewModelFactory(
     private val repository: MusicRepository,
     private val musicController: MusicController
@@ -244,6 +259,7 @@ class MusicViewModelFactory(
             modelClass.isAssignableFrom(PlayerViewModel::class.java) -> PlayerViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(MiniPlayerViewModel::class.java) -> MiniPlayerViewModel(musicController) as T
             modelClass.isAssignableFrom(QueueViewModel::class.java) -> QueueViewModel(musicController) as T
+            modelClass.isAssignableFrom(SongPropertiesViewModel::class.java) -> SongPropertiesViewModel(repository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

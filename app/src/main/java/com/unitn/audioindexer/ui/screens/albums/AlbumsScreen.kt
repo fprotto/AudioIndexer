@@ -522,6 +522,7 @@ fun AlbumDetailScreen(
                             onClick = { viewModel.playSong(currentAlbum.songs, index) },
                             onAddToQueue = { viewModel.addToQueue(song) },
                             onAddToPlaylist = { showAddToPlaylistDialogForSong = song },
+                            onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                             onDelete = { viewModel.deleteSong(song) }
                         )
                     }
@@ -547,6 +548,7 @@ fun AlbumDetailScreen(
                         onClick = { viewModel.playSong(currentAlbum.songs, index) },
                         onAddToQueue = { viewModel.addToQueue(song) },
                         onAddToPlaylist = { showAddToPlaylistDialogForSong = song },
+                        onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                         onDelete = { viewModel.deleteSong(song) }
                     )
                 }

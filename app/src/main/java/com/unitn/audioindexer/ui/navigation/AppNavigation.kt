@@ -16,6 +16,7 @@ import com.unitn.audioindexer.ui.screens.player.QueueScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistDetailScreen
 import com.unitn.audioindexer.ui.screens.playlists.PlaylistsScreen
 import com.unitn.audioindexer.ui.screens.setup.SetupScreen
+import com.unitn.audioindexer.ui.screens.songs.SongPropertiesScreen
 import com.unitn.audioindexer.ui.screens.tracks.TracksScreen
 
 @Composable
@@ -40,6 +41,14 @@ fun AppNavigation(
 
         composable(Screen.Tracks.route) {
             TracksScreen(navController)
+        }
+
+        composable(Screen.SongProperties.route) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("songId")?.toInt()
+            SongPropertiesScreen(
+                id = id,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Albums.route) {

@@ -45,6 +45,7 @@ fun SongCard(
     onClick: () -> Unit = {},
     onAddToQueue: () -> Unit = {},
     onAddToPlaylist: () -> Unit = {},
+    onPropertiesClick: () -> Unit = {},
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null
 ) {
@@ -161,7 +162,7 @@ fun SongCard(
                             text = { Text(stringResource(R.string.menu_properties)) },
                             onClick = {
                                 showMenu = false
-                                // TODO: implement properties
+                                onPropertiesClick()
                             }
                         )
                         if (onRemoveFromPlaylist != null) {

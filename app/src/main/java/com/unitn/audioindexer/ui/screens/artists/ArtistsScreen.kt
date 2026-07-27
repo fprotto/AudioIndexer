@@ -309,6 +309,7 @@ fun ArtistDetailScreen(
                         song = song, 
                         onClick = { viewModel.playSong(allArtistSongs, index) },
                         onAddToQueue = { viewModel.addToQueue(song) },
+                        onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                         onDelete = { viewModel.deleteSong(song) }
                     )
                 }
