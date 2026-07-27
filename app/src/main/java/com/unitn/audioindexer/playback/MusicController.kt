@@ -31,7 +31,8 @@ data class PlaybackState(
     val progress: Long = 0,
     val duration: Long = 0,
     val isShuffle: Boolean = false,
-    val repeatMode: Int = Player.REPEAT_MODE_OFF
+    val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val playbackSpeed: Float = 1.0f
 )
 
 class MusicController(
@@ -72,6 +73,10 @@ class MusicController(
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     _state.value = _state.value.copy(isPlaying = isPlaying)
                     if (isPlaying) startProgressUpdate() else stopProgressUpdate()
+                }
+
+                override fun onPlaybackParametersChanged(playbackParameters: androidx.media3.common.PlaybackParameters) {
+                    _state.value = _state.value.copy(playbackSpeed = playbackParameters.speed)
                 }
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -223,6 +228,10 @@ class MusicController(
 
     fun seekTo(positionMs: Long) {
         controller?.seekTo(positionMs)
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        controller?.setPlaybackSpeed(speed)
     }
 
     fun playAtIndex(index: Int) {

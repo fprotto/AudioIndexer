@@ -112,7 +112,8 @@ fun MainScreen(
                 onLanguageChange = { lang -> settingsViewModel.setLanguage(context, lang) },
                 languages = settingsViewModel.getSupportedLanguages(context),
                 settingsViewModel = settingsViewModel,
-                onAddProfile = { navController.navigate(Screen.Setup.route) }
+                onAddProfile = { navController.navigate(Screen.Setup.route) },
+                onPlayerSettingsClick = { navController.navigate(Screen.PlayerSettings.route) }
             ) 
         },
         bottomBar = { 
@@ -150,7 +151,8 @@ fun TopBar(
     onLanguageChange: (String) -> Unit,
     languages: List<Pair<String, String>>,
     settingsViewModel: SettingsViewModel,
-    onAddProfile: () -> Unit
+    onAddProfile: () -> Unit,
+    onPlayerSettingsClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showLanguageMenu by remember { mutableStateOf(false) }
@@ -221,7 +223,7 @@ fun TopBar(
                         },
                         text = { Text(stringResource(R.string.settings_player_options)) },
                         onClick = {
-                            /* TODO: implement */
+                            onPlayerSettingsClick()
                             showMenu = false
                         }
                     )

@@ -295,6 +295,7 @@ class MusicViewModelFactory(
             modelClass.isAssignableFrom(MiniPlayerViewModel::class.java) -> MiniPlayerViewModel(musicController) as T
             modelClass.isAssignableFrom(QueueViewModel::class.java) -> QueueViewModel(musicController) as T
             modelClass.isAssignableFrom(SongPropertiesViewModel::class.java) -> SongPropertiesViewModel(repository) as T
+            modelClass.isAssignableFrom(PlayerSettingsViewModel::class.java) -> PlayerSettingsViewModel(settingsRepository, musicController) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

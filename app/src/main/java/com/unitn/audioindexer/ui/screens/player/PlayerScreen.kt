@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -81,6 +82,7 @@ fun PlayerScreen(
     onBackClick: () -> Unit = {},
     onQueueClick: () -> Unit = {},
     onLyricsClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val configuration = LocalConfiguration.current
@@ -155,6 +157,7 @@ fun PlayerScreen(
                 ) {
                     PlayerTopBar(
                         onBackClick = onBackClick,
+                        onSettingsClick = onSettingsClick,
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -199,7 +202,8 @@ fun PlayerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 PlayerTopBar(
-                    onBackClick = onBackClick
+                    onBackClick = onBackClick,
+                    onSettingsClick = onSettingsClick
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -237,6 +241,7 @@ fun PlayerScreen(
 @Composable
 private fun PlayerTopBar(
     onBackClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -258,6 +263,15 @@ private fun PlayerTopBar(
             fontWeight = FontWeight.Bold,
             letterSpacing = 2.sp
         )
+        IconButton(
+            onClick = onSettingsClick,
+            modifier = Modifier.align(Alignment.CenterEnd)
+        ) {
+            Icon(
+                Icons.Default.Settings,
+                contentDescription = stringResource(R.string.settings)
+            )
+        }
     }
 }
 

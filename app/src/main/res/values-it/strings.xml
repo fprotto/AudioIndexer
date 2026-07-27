@@ -84,4 +84,16 @@
     <string name="delete_playlist_image">Elimina immagine playlist</string>
     <string name="select_songs">Seleziona canzoni</string>
     <string name="add_selected_songs">Aggiungi selezionate</string>
+    <string name="player_settings_title">Impostazioni Riproduttore</string>
+    <string name="equalizer">Equalizzatore</string>
+    <string name="bass_boost">Bass Boost</string>
+    <string name="virtualizer">Virtualizzatore</string>
+    <string name="loudness_enhancer">Ottimizzatore Volume</string>
+    <string name="playback_speed">Velocità di riproduzione</string>
+    <string name="preset">Preset</string>
+    <string name="strength">Intensità</string>
+    <string name="gain">Guadagno</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="custom">Personalizzato</string>
 </resources>

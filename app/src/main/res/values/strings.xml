@@ -83,4 +83,16 @@
     <string name="delete_playlist_image">Delete playlist image</string>
     <string name="select_songs">Select songs</string>
     <string name="add_selected_songs">Add selected</string>
+    <string name="player_settings_title">Player Settings</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="bass_boost">Bass Boost</string>
+    <string name="virtualizer">Virtualizer</string>
+    <string name="loudness_enhancer">Loudness Enhancer</string>
+    <string name="playback_speed">Playback Speed</string>
+    <string name="preset">Preset</string>
+    <string name="strength">Strength</string>
+    <string name="gain">Gain</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="custom">Custom</string>
 </resources>
