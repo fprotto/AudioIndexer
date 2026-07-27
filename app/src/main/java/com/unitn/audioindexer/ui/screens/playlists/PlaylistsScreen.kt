@@ -22,12 +22,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.AddToQueue
-import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlaylistAddCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
@@ -74,10 +71,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.HideImage
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.PlaylistsViewModel
 import com.unitn.audioindexer.ui.components.CreatePlaylistDialog
 import com.unitn.audioindexer.ui.components.AddToPlaylistDialog
+import com.unitn.audioindexer.ui.components.SongSelectionDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.unitn.audioindexer.ui.components.EditPlaylistDialog
 import com.unitn.audioindexer.ui.components.DeletePlaylistConfirmationDialog
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -255,12 +260,11 @@ fun PlaylistItem(
                         modifier = Modifier.size(56.dp)
                     )
                     is IconSource.UriIcon -> {
-                        // TODO: Use Coil
-                        Icon(
-                            imageVector = Icons.Default.Album,
+                        AsyncImage(
+                            model = cover.uri,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(56.dp)
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
@@ -316,6 +320,7 @@ fun PlaylistDetailScreen(
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showAddToPlaylistDialogForAll by remember { mutableStateOf(false) }
+    var showSongSelectionDialog by remember { mutableStateOf(false) }
     
     LaunchedEffect(id, allPlaylists) {
         if (id != null) {
@@ -397,6 +402,24 @@ fun PlaylistDetailScreen(
         )
     }
 
+    if (showSongSelectionDialog) {
+        val librarySongs by viewModel.allSongs.collectAsState()
+        SongSelectionDialog(
+            allSongs = librarySongs,
+            onDismissRequest = { showSongSelectionDialog = false },
+            onConfirm = { selectedSongs ->
+                viewModel.addSongsToPlaylist(currentPlaylist.id, selectedSongs)
+                showSongSelectionDialog = false
+            }
+        )
+    }
+
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            viewModel.updatePlaylistCover(currentPlaylist.id, uri)
+        }
+    }
+
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -420,10 +443,12 @@ fun PlaylistDetailScreen(
                     isLandscape = true,
                     onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
                     onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
+                    onUpdateCoverClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    onRemoveCoverClick = { viewModel.removePlaylistCover(currentPlaylist.id) },
+                    onAddSongsClick = { showSongSelectionDialog = true },
                     onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) },
                     onRenameClick = { showRenameDialog = true },
                     onDeleteClick = { showDeleteConfirmation = true },
-                    onAddToPlaylistClick = { showAddToPlaylistDialogForAll = true },
                     sortOrder = sortOrder,
                     onSortOrderChange = { sortOrder = it },
                     modifier = Modifier
@@ -462,10 +487,12 @@ fun PlaylistDetailScreen(
                         onNavigateBack = onNavigateBack,
                         onPlayClick = { viewModel.playPlaylist(currentPlaylist) },
                         onShuffleClick = { viewModel.playPlaylist(currentPlaylist, shuffle = true) },
+                        onUpdateCoverClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        onRemoveCoverClick = { viewModel.removePlaylistCover(currentPlaylist.id) },
+                        onAddSongsClick = { showSongSelectionDialog = true },
                         onAddToQueue = { viewModel.addPlaylistToQueue(currentPlaylist) },
                         onRenameClick = { showRenameDialog = true },
                         onDeleteClick = { showDeleteConfirmation = true },
-                        onAddToPlaylistClick = { showAddToPlaylistDialogForAll = true },
                         sortOrder = sortOrder,
                         onSortOrderChange = { sortOrder = it }
                     )
@@ -495,10 +522,12 @@ private fun PlaylistHeader(
     onPlayClick: () -> Unit,
     onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onUpdateCoverClick: () -> Unit = {},
+    onRemoveCoverClick: () -> Unit = {},
+    onAddSongsClick: () -> Unit = {},
     onAddToQueue: () -> Unit = {},
     onRenameClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
-    onAddToPlaylistClick: () -> Unit = {},
     sortOrder: PlaylistSongSortOrder = PlaylistSongSortOrder.CUSTOM,
     onSortOrderChange: (PlaylistSongSortOrder) -> Unit = {},
     isLandscape: Boolean = false
@@ -541,7 +570,8 @@ private fun PlaylistHeader(
                 modifier = Modifier
                     .size(if (isLandscape) 120.dp else 180.dp)
                     .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { onUpdateCoverClick() },
                 contentAlignment = Alignment.Center
             ) {
                 when (val cover = playlist.cover) {
@@ -552,12 +582,11 @@ private fun PlaylistHeader(
                         modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
                     )
                     is IconSource.UriIcon -> {
-                        // TODO: Use Coil
-                        Icon(
-                            imageVector = Icons.Default.Album,
+                        AsyncImage(
+                            model = cover.uri,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(if (isLandscape) 56.dp else 80.dp)
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
@@ -706,6 +735,20 @@ private fun PlaylistHeader(
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
+                                    contentDescription = stringResource(R.string.menu_add_to_playlist),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            text = { Text(stringResource(R.string.menu_add_to_playlist)) },
+                            onClick = {
+                                showMenu = false
+                                onAddSongsClick()
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
                                     imageVector = Icons.Default.AddToQueue,
                                     contentDescription = stringResource(R.string.menu_add_to_queue),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -715,20 +758,6 @@ private fun PlaylistHeader(
                             onClick = {
                                 showMenu = false
                                 onAddToQueue()
-                            }
-                        )
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.PlaylistAddCircle,
-                                    contentDescription = stringResource(R.string.menu_add_to_playlist),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = { Text(stringResource(R.string.menu_add_to_playlist)) },
-                            onClick = { 
-                                showMenu = false
-                                onAddToPlaylistClick()
                             }
                         )
                         DropdownMenuItem(
@@ -745,17 +774,22 @@ private fun PlaylistHeader(
                                 onRenameClick()
                             }
                         )
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = stringResource(R.string.menu_properties),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = { Text(stringResource(R.string.menu_properties)) },
-                            onClick = { showMenu = false /* TODO: implement */ }
-                        )
+                        if (playlist.cover is IconSource.UriIcon) {
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.HideImage,
+                                        contentDescription = stringResource(R.string.delete_playlist_image),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                text = { Text(stringResource(R.string.delete_playlist_image)) },
+                                onClick = {
+                                    showMenu = false
+                                    onRemoveCoverClick()
+                                }
+                            )
+                        }
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(

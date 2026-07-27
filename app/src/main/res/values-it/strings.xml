@@ -81,4 +81,7 @@
     <string name="custom_order">Ordine personalizzato</string>
     <string name="lyrics">Testo</string>
     <string name="no_lyrics_found">Testo non disponibile</string>
+    <string name="delete_playlist_image">Elimina immagine playlist</string>
+    <string name="select_songs">Seleziona canzoni</string>
+    <string name="add_selected_songs">Aggiungi selezionate</string>
 </resources>

@@ -28,6 +28,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import java.io.File
 import java.security.MessageDigest
@@ -245,6 +246,25 @@ class MusicRepository(
             Log.e("MusicRepository", "Error saving artwork", e)
             null
         }
+    }
+
+    suspend fun updatePlaylistCover(id: Int, uri: Uri) = withContext(Dispatchers.IO) {
+        val bytes = try {
+            context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        } catch (e: Exception) {
+            Log.e("MusicRepository", "Error reading uri", e)
+            null
+        } ?: return@withContext
+        
+        val path = saveArtwork(bytes) ?: return@withContext
+        val playlist = playlistDao.getPlaylistById(id)?.playlist ?: return@withContext
+        playlistDao.updatePlaylist(playlist.copy(coverType = "uri", coverValue = path))
+    }
+
+    suspend fun removePlaylistCover(id: Int) {
+        val playlist = playlistDao.getPlaylistById(id)?.playlist ?: return
+        val defaultIcon = if (playlist.isAlbum) "Album" else "FeaturedPlayList"
+        playlistDao.updatePlaylist(playlist.copy(coverType = "vector", coverValue = defaultIcon))
     }
 
     suspend fun insertPlaylist(

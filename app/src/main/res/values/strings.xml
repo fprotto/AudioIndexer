@@ -80,4 +80,7 @@
     <string name="custom_order">Custom order</string>
     <string name="lyrics">Lyrics</string>
     <string name="no_lyrics_found">No lyrics available</string>
+    <string name="delete_playlist_image">Delete playlist image</string>
+    <string name="select_songs">Select songs</string>
+    <string name="add_selected_songs">Add selected</string>
 </resources>

@@ -196,7 +196,6 @@ class MusicController(
                 songs.map { it.toMediaItem() }
 
         player.setMediaItems(mediaItems)
-        player.shuffleModeEnabled = shuffle
         player.prepare()
         
         player.seekTo(startIndex, 0)

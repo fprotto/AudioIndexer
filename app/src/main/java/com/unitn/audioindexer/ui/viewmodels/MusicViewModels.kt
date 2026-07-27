@@ -3,6 +3,7 @@ package com.unitn.audioindexer.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import android.net.Uri
 import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.Artist
 import com.unitn.audioindexer.data.components.Playlist
@@ -150,6 +151,9 @@ class PlaylistsViewModel(
     val playlists: StateFlow<List<Playlist>> = repository.allPlaylists
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val allSongs: StateFlow<List<Song>> = repository.allSongs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val currentSong: StateFlow<Song?> = musicController.state
         .map { it.currentSong }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -185,6 +189,18 @@ class PlaylistsViewModel(
     fun renamePlaylist(playlistId: Int, newName: String) {
         viewModelScope.launch {
             repository.renamePlaylist(playlistId, newName)
+        }
+    }
+
+    fun updatePlaylistCover(playlistId: Int, uri: Uri) {
+        viewModelScope.launch {
+            repository.updatePlaylistCover(playlistId, uri)
+        }
+    }
+
+    fun removePlaylistCover(playlistId: Int) {
+        viewModelScope.launch {
+            repository.removePlaylistCover(playlistId)
         }
     }
 
