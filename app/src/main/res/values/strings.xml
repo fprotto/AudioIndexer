@@ -51,7 +51,7 @@
     <string name="next">Next</string>
     <string name="repeat">Repeat</string>
     <string name="search">Search</string>
-    <string name="favorite_songs">Favorites</string>
+    <string name="most_listened_songs">Most listened</string>
     <string name="welcome_title">Welcome to AudioIndexer</string>
     <string name="setup_description">To start listening, please add a music source.</string>
     <string name="add_local_source">Add Local Folder</string>
