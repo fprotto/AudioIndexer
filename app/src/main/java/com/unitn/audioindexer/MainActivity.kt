@@ -35,7 +35,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repository = (application as AudioIndexerApplication).repository
+        val app = application as AudioIndexerApplication
+        app.musicController.initialize()
+
+        val repository = app.repository
         lifecycleScope.launch {
             val count = repository.getSourceCount()
             if (count > 0) {

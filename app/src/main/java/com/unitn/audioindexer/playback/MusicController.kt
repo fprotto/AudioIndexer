@@ -50,7 +50,7 @@ class MusicController(
     private var lastSourceId: Int? = null
 
     init {
-        initializeController()
+        initialize()
         scope.launch {
             repository.activeSourceId.collect { id ->
                 if (lastSourceId != null && lastSourceId != id) {
@@ -61,7 +61,9 @@ class MusicController(
         }
     }
 
-    private fun initializeController() {
+    fun initialize() {
+        if (controllerFuture != null) return
+
         val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture?.addListener({
@@ -109,11 +111,20 @@ class MusicController(
         }, MoreExecutors.directExecutor())
     }
 
-    fun resetPlayer() {
+    private fun resetPlayer() {
         val player = controller ?: return
         player.stop()
         player.clearMediaItems()
         _state.value = PlaybackState()
+    }
+
+    fun destroyPlayer() {
+        val player = controller ?: return
+        player.stop()
+        player.clearMediaItems()
+        player.release()
+        controllerFuture?.cancel(true)
+        controllerFuture = null
     }
 
     private fun updateState() {

@@ -295,7 +295,7 @@ fun ArtistDetailScreen(
             if (topSongs.isNotEmpty()) {
                 item {
                     Text(
-                        text = stringResource(R.string.favorite_songs),
+                        text = stringResource(R.string.most_listened_songs),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
