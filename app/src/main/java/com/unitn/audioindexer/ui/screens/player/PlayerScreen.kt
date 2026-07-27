@@ -74,7 +74,8 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = viewModel(
         factory = MusicViewModelFactory(
             (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).repository,
-            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).musicController,
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).settingsRepository
         )
     ),
     onBackClick: () -> Unit = {},
@@ -86,7 +87,7 @@ fun PlayerScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication
-    val playlistsViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val playlistsViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val playlists by playlistsViewModel.playlists.collectAsState()
 
     var showAddToPlaylistDialog by remember { mutableStateOf(false) }

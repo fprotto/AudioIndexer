@@ -5,15 +5,13 @@ import android.app.LocaleManager
 import android.content.Context
 import android.os.Build
 import android.os.LocaleList
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.unitn.audioindexer.data.components.ExportConfig
 import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
 import com.unitn.audioindexer.data.repository.MusicRepository
+import com.unitn.audioindexer.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -23,9 +21,11 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.Locale
 
-class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
-    var isDarkTheme by mutableStateOf<Boolean?>(null)
-        private set
+class SettingsViewModel(
+    private val repository: MusicRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+    val isDarkTheme: StateFlow<Boolean?> = settingsRepository.isDarkTheme
 
     val allSources: StateFlow<List<MusicSourceEntity>?> = repository.allSources
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -77,7 +77,7 @@ class SettingsViewModel(private val repository: MusicRepository) : ViewModel() {
     }
 
     fun toggleTheme(systemInDarkTheme: Boolean) {
-        isDarkTheme = !(isDarkTheme ?: systemInDarkTheme)
+        settingsRepository.setDarkTheme(!(isDarkTheme.value ?: systemInDarkTheme))
     }
 
     fun exportConfiguration(outputStream: OutputStream, onComplete: () -> Unit) {

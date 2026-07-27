@@ -77,7 +77,7 @@ fun ArtistsScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
-    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
 
     var searchQuery by remember { mutableStateOf("") }
     val allArtists by viewModel.artists.collectAsState()
@@ -223,7 +223,7 @@ fun ArtistDetailScreen(
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
-    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
+    val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController, app.settingsRepository))
     
     var artist by remember { mutableStateOf<Artist?>(null) }
     var artistAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }

@@ -3,10 +3,12 @@ package com.unitn.audioindexer
 import android.app.Application
 import com.unitn.audioindexer.data.database.AppDatabase
 import com.unitn.audioindexer.data.repository.MusicRepository
+import com.unitn.audioindexer.data.repository.SettingsRepository
 import com.unitn.audioindexer.playback.MusicController
 
 class AudioIndexerApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
+    val settingsRepository by lazy { SettingsRepository(this) }
     val repository by lazy { 
         MusicRepository(
             this,

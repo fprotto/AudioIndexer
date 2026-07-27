@@ -54,7 +54,7 @@ fun SongPropertiesScreen(
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
     val viewModel: SongPropertiesViewModel = viewModel(
-        factory = MusicViewModelFactory(app.repository, app.musicController)
+        factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository)
     )
 
     val song by viewModel.song.collectAsState()

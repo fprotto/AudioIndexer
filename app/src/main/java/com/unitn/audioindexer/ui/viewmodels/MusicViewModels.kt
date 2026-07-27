@@ -8,6 +8,7 @@ import com.unitn.audioindexer.data.components.Artist
 import com.unitn.audioindexer.data.components.Playlist
 import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.repository.MusicRepository
+import com.unitn.audioindexer.data.repository.SettingsRepository
 import com.unitn.audioindexer.playback.MusicController
 import com.unitn.audioindexer.playback.PlaybackState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -246,7 +247,8 @@ class SongPropertiesViewModel(
 
 class MusicViewModelFactory(
     private val repository: MusicRepository,
-    private val musicController: MusicController
+    private val musicController: MusicController,
+    private val settingsRepository: SettingsRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
@@ -255,7 +257,7 @@ class MusicViewModelFactory(
             modelClass.isAssignableFrom(AlbumsViewModel::class.java) -> AlbumsViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(PlaylistsViewModel::class.java) -> PlaylistsViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(SetupViewModel::class.java) -> SetupViewModel(repository) as T
-            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(repository) as T
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(repository, settingsRepository) as T
             modelClass.isAssignableFrom(PlayerViewModel::class.java) -> PlayerViewModel(repository, musicController) as T
             modelClass.isAssignableFrom(MiniPlayerViewModel::class.java) -> MiniPlayerViewModel(musicController) as T
             modelClass.isAssignableFrom(QueueViewModel::class.java) -> QueueViewModel(musicController) as T

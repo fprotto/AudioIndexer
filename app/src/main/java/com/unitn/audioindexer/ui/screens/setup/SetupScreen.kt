@@ -50,7 +50,7 @@ fun SetupScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
-    val viewModel: SetupViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val viewModel: SetupViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val scope = rememberCoroutineScope()
 
     var showRemoteDialog by remember { mutableStateOf(false) }

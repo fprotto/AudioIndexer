@@ -84,12 +84,12 @@ fun AlbumsScreen(
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
-    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
+    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController, app.settingsRepository))
 
     var searchQuery by remember { mutableStateOf("") }
     val allAlbums by viewModel.albums.collectAsState()
 
-    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
 
     var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
@@ -427,9 +427,9 @@ fun AlbumDetailScreen(
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
-    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController))
+    val viewModel: AlbumsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController, app.settingsRepository))
 
-    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
 
     var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }

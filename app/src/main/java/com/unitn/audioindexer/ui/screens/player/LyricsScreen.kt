@@ -41,7 +41,8 @@ fun LyricsScreen(
     viewModel: PlayerViewModel = viewModel(
         factory = MusicViewModelFactory(
             (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).repository,
-            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).musicController,
+            (androidx.compose.ui.platform.LocalContext.current.applicationContext as AudioIndexerApplication).settingsRepository
         )
     )
 ) {

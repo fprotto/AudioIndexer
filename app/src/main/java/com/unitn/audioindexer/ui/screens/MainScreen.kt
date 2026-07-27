@@ -86,7 +86,8 @@ fun MainScreen(
         viewModelStoreOwner = LocalContext.current.findActivity()!!,
         factory = MusicViewModelFactory(
             (LocalContext.current.applicationContext as AudioIndexerApplication).repository,
-            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController,
+            (LocalContext.current.applicationContext as AudioIndexerApplication).settingsRepository
         )
     ),
     content: @Composable () -> Unit
@@ -453,7 +454,8 @@ fun MiniPlayer(
     viewModel: MiniPlayerViewModel = viewModel(
         factory = MusicViewModelFactory(
             (LocalContext.current.applicationContext as AudioIndexerApplication).repository,
-            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController
+            (LocalContext.current.applicationContext as AudioIndexerApplication).musicController,
+            (LocalContext.current.applicationContext as AudioIndexerApplication).settingsRepository
         )
     )
 ) {

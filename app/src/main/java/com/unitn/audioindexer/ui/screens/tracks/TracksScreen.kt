@@ -58,14 +58,14 @@ fun TracksScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as AudioIndexerApplication
-    val viewModel: TracksViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val viewModel: TracksViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     
     var searchQuery by remember { mutableStateOf("") }
     var sortOrder by remember { mutableStateOf(SongSortOrder.TITLE) }
 
     val allSongs by viewModel.songs.collectAsState()
     
-    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController))
+    val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
 
     var showAddToPlaylistDialog by remember { mutableStateOf<Song?>(null) }

@@ -14,7 +14,7 @@ import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 import com.unitn.audioindexer.ui.navigation.AppNavigation
 import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
-
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels {
         val app = application as AudioIndexerApplication
-        MusicViewModelFactory(app.repository, app.musicController)
+        MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository)
     }
     private var startDestination by mutableStateOf<String?>(null)
 
@@ -64,8 +64,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val destination = startDestination
+            val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+            
             if (destination != null) {
-                AudioIndexerTheme(useDarkTheme = settingsViewModel.isDarkTheme ?: isSystemInDarkTheme()) {
+                AudioIndexerTheme(useDarkTheme = isDarkTheme ?: isSystemInDarkTheme()) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
