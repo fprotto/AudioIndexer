@@ -91,6 +91,7 @@ fun AlbumsScreen(
 
     val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
+    val currentSong by viewModel.currentSong.collectAsState()
 
     var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
     var showAddToPlaylistDialogForAlbum by remember { mutableStateOf<Album?>(null) }
@@ -431,6 +432,7 @@ fun AlbumDetailScreen(
 
     val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
+    val currentSong by viewModel.currentSong.collectAsState()
 
     var showAddToPlaylistDialogForSong by remember { mutableStateOf<com.unitn.audioindexer.data.components.Song?>(null) }
     var showAddToPlaylistDialogForAlbum by remember { mutableStateOf<Album?>(null) }
@@ -523,7 +525,8 @@ fun AlbumDetailScreen(
                             onAddToQueue = { viewModel.addToQueue(song) },
                             onAddToPlaylist = { showAddToPlaylistDialogForSong = song },
                             onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
-                            onDelete = { viewModel.deleteSong(song) }
+                            onDelete = { viewModel.deleteSong(song) },
+                            isPlaying = song.id == currentSong?.id
                         )
                     }
                 }
@@ -549,7 +552,8 @@ fun AlbumDetailScreen(
                         onAddToQueue = { viewModel.addToQueue(song) },
                         onAddToPlaylist = { showAddToPlaylistDialogForSong = song },
                         onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
-                        onDelete = { viewModel.deleteSong(song) }
+                        onDelete = { viewModel.deleteSong(song) },
+                        isPlaying = song.id == currentSong?.id
                     )
                 }
             }

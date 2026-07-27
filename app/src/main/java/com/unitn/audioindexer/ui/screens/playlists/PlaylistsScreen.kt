@@ -305,6 +305,7 @@ fun PlaylistDetailScreen(
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
     val viewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController, app.settingsRepository))
+    val currentSong by viewModel.currentSong.collectAsState()
     
     var playlist by remember { mutableStateOf<Playlist?>(null) }
     val allPlaylists by viewModel.playlists.collectAsState()
@@ -442,7 +443,8 @@ fun PlaylistDetailScreen(
                             onAddToPlaylist = { showAddToPlaylistDialog = song },
                             onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                             onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) },
-                            onDelete = { viewModel.deleteSong(song) }
+                            onDelete = { viewModel.deleteSong(song) },
+                            isPlaying = song.id == currentSong?.id
                         )
                     }
                 }
@@ -476,7 +478,8 @@ fun PlaylistDetailScreen(
                         onAddToPlaylist = { showAddToPlaylistDialog = song },
                         onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
                         onRemoveFromPlaylist = { viewModel.removeSongFromPlaylist(currentPlaylist.id, song.id) },
-                        onDelete = { viewModel.deleteSong(song) }
+                        onDelete = { viewModel.deleteSong(song) },
+                        isPlaying = song.id == currentSong?.id
                     )
                 }
             }

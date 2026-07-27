@@ -224,6 +224,7 @@ fun ArtistDetailScreen(
     val app = context.applicationContext as AudioIndexerApplication
     val repository = app.repository
     val viewModel: ArtistsViewModel = viewModel(factory = MusicViewModelFactory(repository, app.musicController, app.settingsRepository))
+    val currentSong by viewModel.currentSong.collectAsState()
     
     var artist by remember { mutableStateOf<Artist?>(null) }
     var artistAlbums by remember { mutableStateOf<List<Album>>(emptyList()) }
@@ -310,7 +311,8 @@ fun ArtistDetailScreen(
                         onClick = { viewModel.playSong(allArtistSongs, index) },
                         onAddToQueue = { viewModel.addToQueue(song) },
                         onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
-                        onDelete = { viewModel.deleteSong(song) }
+                        onDelete = { viewModel.deleteSong(song) },
+                        isPlaying = song.id == currentSong?.id
                     )
                 }
             }

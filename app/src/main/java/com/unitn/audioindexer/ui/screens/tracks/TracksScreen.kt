@@ -64,6 +64,7 @@ fun TracksScreen(
     var sortOrder by remember { mutableStateOf(SongSortOrder.TITLE) }
 
     val allSongs by viewModel.songs.collectAsState()
+    val currentSong by viewModel.currentSong.collectAsState()
     
     val playlistViewModel: PlaylistsViewModel = viewModel(factory = MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository))
     val allPlaylists by playlistViewModel.playlists.collectAsState()
@@ -130,6 +131,7 @@ fun TracksScreen(
             
             TracksSection(
                 sortedSongs,
+                currentSong = currentSong,
                 onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
                 onAddToQueue = { song -> viewModel.addToQueue(song) },
                 onAddToPlaylist = { song -> showAddToPlaylistDialog = song },
@@ -254,6 +256,7 @@ fun TracksControlBar(
 @Composable
 fun TracksSection(
     songs: List<Song>,
+    currentSong: Song?,
     onSongClick: (Int) -> Unit,
     onAddToQueue: (Song) -> Unit,
     onAddToPlaylist: (Song) -> Unit,
@@ -268,7 +271,8 @@ fun TracksSection(
                 onAddToQueue = { onAddToQueue(song) },
                 onAddToPlaylist = { onAddToPlaylist(song) },
                 onPropertiesClick = { onPropertiesClick(song) },
-                onDelete = { onDelete(song) }
+                onDelete = { onDelete(song) },
+                isPlaying = song.id == currentSong?.id
             )
         }
     }

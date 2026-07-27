@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -24,6 +25,10 @@ class TracksViewModel(
 ) : ViewModel() {
     val songs: StateFlow<List<Song>> = repository.allSongs
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val currentSong: StateFlow<Song?> = musicController.state
+        .map { it.currentSong }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
@@ -52,6 +57,10 @@ class ArtistsViewModel(
 ) : ViewModel() {
     val artists: StateFlow<List<Artist>> = repository.allArtists
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val currentSong: StateFlow<Song?> = musicController.state
+        .map { it.currentSong }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun playSong(songs: List<Song>, startIndex: Int) {
         musicController.playSongs(songs, startIndex)
@@ -92,6 +101,10 @@ class AlbumsViewModel(
 ) : ViewModel() {
     val albums: StateFlow<List<Album>> = repository.allAlbums
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val currentSong: StateFlow<Song?> = musicController.state
+        .map { it.currentSong }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun playAlbum(album: Album, shuffle: Boolean = false) {
         musicController.playSongs(album.songs, shuffle = shuffle)
@@ -136,6 +149,10 @@ class PlaylistsViewModel(
 ) : ViewModel() {
     val playlists: StateFlow<List<Playlist>> = repository.allPlaylists
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val currentSong: StateFlow<Song?> = musicController.state
+        .map { it.currentSong }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun playPlaylist(playlist: Playlist, shuffle: Boolean = false) {
         musicController.playSongs(playlist.songs, shuffle = shuffle)

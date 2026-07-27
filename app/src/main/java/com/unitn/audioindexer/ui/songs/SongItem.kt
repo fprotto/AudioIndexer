@@ -47,7 +47,8 @@ fun SongCard(
     onAddToPlaylist: () -> Unit = {},
     onPropertiesClick: () -> Unit = {},
     onRemoveFromPlaylist: (() -> Unit)? = null,
-    onDelete: (() -> Unit)? = null
+    onDelete: (() -> Unit)? = null,
+    isPlaying: Boolean = false
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -56,7 +57,8 @@ fun SongCard(
             Text(
                 text = song.title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.SemiBold,
+                color = if (isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
