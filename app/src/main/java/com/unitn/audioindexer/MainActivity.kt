@@ -1,5 +1,6 @@
 package com.unitn.audioindexer
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +15,7 @@ import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 import com.unitn.audioindexer.ui.navigation.AppNavigation
 import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.compose.rememberNavController
 import com.unitn.audioindexer.ui.screens.Screen
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -31,9 +34,22 @@ class MainActivity : ComponentActivity() {
         MusicViewModelFactory(app.repository, app.musicController, app.settingsRepository)
     }
     private var startDestination by mutableStateOf<String?>(null)
+    private var navigateToPlayer by mutableStateOf(false)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+            navigateToPlayer = true
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+            navigateToPlayer = true
+        }
 
         val app = application as AudioIndexerApplication
         app.musicController.initialize()
@@ -65,6 +81,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val destination = startDestination
             val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+            val navController = rememberNavController()
+
+            LaunchedEffect(navigateToPlayer) {
+                if (navigateToPlayer) {
+                    navController.navigate(Screen.Player.route) {
+                        launchSingleTop = true
+                    }
+                    navigateToPlayer = false
+                }
+            }
             
             if (destination != null) {
                 AudioIndexerTheme(useDarkTheme = isDarkTheme ?: isSystemInDarkTheme()) {
@@ -72,7 +98,10 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        AppNavigation(startDestination = destination)
+                        AppNavigation(
+                            navController = navController,
+                            startDestination = destination
+                        )
                     }
                 }
             }

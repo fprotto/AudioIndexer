@@ -2,9 +2,9 @@ package com.unitn.audioindexer.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.screens.albums.AlbumDetailScreen
 import com.unitn.audioindexer.ui.screens.albums.AlbumsScreen
@@ -22,11 +22,10 @@ import com.unitn.audioindexer.ui.screens.tracks.TracksScreen
 
 @Composable
 fun AppNavigation(
+    navController: NavHostController,
     startDestination: String,
     modifier: Modifier = Modifier
 ) {
-    val navController = rememberNavController()
-
     NavHost(
         navController = navController,
         startDestination = startDestination,

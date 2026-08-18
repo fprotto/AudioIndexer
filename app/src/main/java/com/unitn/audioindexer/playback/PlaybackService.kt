@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.playback
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.media.audiofx.BassBoost
 import android.media.audiofx.Equalizer
@@ -7,6 +8,8 @@ import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.Virtualizer
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -31,8 +34,31 @@ class PlaybackService : MediaSessionService() {
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this).build()
-        mediaSession = MediaSession.Builder(this, player).build()
+        
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .build()
+
+        val player = ExoPlayer.Builder(this)
+            .setAudioAttributes(audioAttributes, true)
+            .setWakeMode(C.WAKE_MODE_NETWORK)
+            .build()
+
+        val intent = Intent(this, com.unitn.audioindexer.MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra("OPEN_PLAYER", true)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        mediaSession = MediaSession.Builder(this, player)
+            .setSessionActivity(pendingIntent)
+            .build()
 
         setupAudioEffects(player.audioSessionId)
     }
