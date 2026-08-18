@@ -75,20 +75,6 @@ class ArtistsViewModel(
         musicController.addSongsToQueue(album.songs)
     }
 
-    fun addSongToPlaylist(playlistId: Int, songId: Int) {
-        viewModelScope.launch {
-            repository.addSongToPlaylist(playlistId.toLong(), songId.toLong())
-        }
-    }
-
-    fun addSongsToPlaylist(playlistId: Int, songs: List<Song>) {
-        viewModelScope.launch {
-            songs.forEach {
-                repository.addSongToPlaylist(playlistId.toLong(), it.id.toLong())
-            }
-        }
-    }
-
     fun deleteSong(song: Song) {
         viewModelScope.launch {
             repository.deleteSong(song.id)

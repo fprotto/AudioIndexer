@@ -112,8 +112,6 @@ class MusicRepository(
 
     suspend fun getSourceCount(): Int = musicSourceDao.getSourceCount()
 
-    suspend fun getSourceById(id: Int): MusicSourceEntity? = musicSourceDao.getSourceById(id)
-
     suspend fun addSource(type: String, path: String, port: Int? = null, name: String): Int {
         val id = musicSourceDao.upsertSource(MusicSourceEntity(type = type, path = path, port = port, name = name))
         if (_activeSourceId.value == null) {
