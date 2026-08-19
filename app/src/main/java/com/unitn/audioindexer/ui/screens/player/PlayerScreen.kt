@@ -2,6 +2,7 @@ package com.unitn.audioindexer.ui.screens.player
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -123,7 +125,26 @@ fun PlayerScreen(
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                var offsetY = 0f
+                detectVerticalDragGestures(
+                    onVerticalDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetY += dragAmount
+                    },
+                    onDragEnd = {
+                        if (offsetY > 100) {
+                            onBackClick()
+                        }
+                        offsetY = 0f
+                    },
+                    onDragCancel = {
+                        offsetY = 0f
+                    }
+                )
+            },
         color = MaterialTheme.colorScheme.background
     ) {
         if (isLandscape) {

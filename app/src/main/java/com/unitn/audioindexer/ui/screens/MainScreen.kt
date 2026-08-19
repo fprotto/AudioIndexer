@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,6 +64,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Upload
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.ui.viewmodels.MiniPlayerViewModel
@@ -104,8 +107,55 @@ fun MainScreen(
         }
     }
 
+    val sections = listOf("Tracks", "Artists", "Albums", "Playlists")
+    val routes = listOf("tracks", "artists", "albums", "playlists")
+    val currentIndex = sections.indexOf(state)
+
+    val onSwipeLeft = {
+        if (currentIndex < routes.size - 1) {
+            navController.navigate(routes[currentIndex + 1]) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+    val onSwipeRight = {
+        if (currentIndex > 0) {
+            navController.navigate(routes[currentIndex - 1]) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.pointerInput(currentIndex) {
+            var offsetX = 0f
+            detectHorizontalDragGestures(
+                onHorizontalDrag = { change, dragAmount ->
+                    change.consume()
+                    offsetX += dragAmount
+                },
+                onDragEnd = {
+                    if (offsetX > 150) { // Swipe right -> Previous
+                        onSwipeRight()
+                    } else if (offsetX < -150) { // Swipe left -> Next
+                        onSwipeLeft()
+                    }
+                    offsetX = 0f
+                },
+                onDragCancel = {
+                    offsetX = 0f
+                }
+            )
+        },
         topBar = { 
             TopBar(
                 onThemeToggle = { settingsViewModel.toggleTheme(systemInDarkTheme) },
