@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,7 +47,6 @@ import androidx.navigation.NavController
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.Artist
-import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.MiniPlayer
@@ -90,21 +88,38 @@ fun ArtistsScreen(
 
     MainScreen(
         navController = navController,
-        state = "Artists"
+        state = "Artists",
+        modifier = modifier
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ArtistsControlBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it }
-            )
-
-            ArtistSection(
-                filteredArtists,
-                navController,
-                modifier = modifier
-            )
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ArtistsControlBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it }
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        items(
+            items = filteredArtists,
+            key = { artist -> artist.id }
+        ) { artist ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                ArtistItem(
+                    artist,
+                    navController,
+                    modifier = modifier
+                )
+            }
+        }
     }
 }
 
@@ -149,23 +164,6 @@ fun ArtistsControlBar(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
         )
-    }
-}
-
-@Composable
-fun ArtistSection(
-    artists: List<Artist>,
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        artists.forEach { artist ->
-            ArtistItem(
-                artist,
-                navController,
-                modifier = modifier
-            )
-        }
     }
 }
 

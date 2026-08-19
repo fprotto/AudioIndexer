@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -122,24 +123,56 @@ fun PlaylistsScreen(
         )
     }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val columns = if (isLandscape) 4 else 2
+
     MainScreen(
         navController = navController,
-        state = "Playlists"
+        state = "Playlists",
+        modifier = modifier
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            PlaylistsControlBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                onNewPlaylistClick = { showCreateDialog = true }
-            )
-
-            PlaylistSection(
-                filteredPlaylists,
-                navController = navController,
-                modifier = modifier
-            )
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                PlaylistsControlBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    onNewPlaylistClick = { showCreateDialog = true }
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        val chunkedPlaylists = filteredPlaylists.chunked(columns)
+
+        items(chunkedPlaylists) { rowPlaylists ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                rowPlaylists.forEach { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        onClick = { navController.navigate(Screen.Playlist.createRoute(playlist.id)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                // Add empty spacers if the row is not full to maintain grid alignment
+                repeat(columns - rowPlaylists.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
     }
 }
 
@@ -192,42 +225,6 @@ fun PlaylistsControlBar(
                 contentDescription = stringResource(R.string.new_playlist),
                 modifier = Modifier.size(20.dp)
             )
-        }
-    }
-}
-
-@Composable
-fun PlaylistSection(
-    playlists: List<Playlist>,
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val columns = if (isLandscape) 4 else 2
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-        playlists.chunked(columns).forEach { rowPlaylists ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                rowPlaylists.forEach { playlist ->
-                    PlaylistItem(
-                        playlist = playlist,
-                        onClick = { navController.navigate(Screen.Playlist.createRoute(playlist.id)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Add empty spacers if the row is not full to maintain grid alignment
-                repeat(columns - rowPlaylists.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
         }
     }
 }

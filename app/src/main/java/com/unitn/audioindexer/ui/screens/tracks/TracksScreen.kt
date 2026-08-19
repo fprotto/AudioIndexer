@@ -2,10 +2,10 @@ package com.unitn.audioindexer.ui.screens.tracks
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,6 +38,8 @@ import com.unitn.audioindexer.ui.screens.MainScreen
 import com.unitn.audioindexer.ui.screens.Screen
 import com.unitn.audioindexer.ui.songs.SongCard
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.unitn.audioindexer.AudioIndexerApplication
@@ -116,28 +118,45 @@ fun TracksScreen(
         state = "Tracks",
         modifier = modifier
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TracksControlBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                onShuffleClick = { 
-                    if (sortedSongs.isNotEmpty()) {
-                        viewModel.playSong(sortedSongs.shuffled(), 0)
-                    }
-                },
-                sortOrder = sortOrder,
-                onSortOrderChange = { sortOrder = it }
-            )
-            
-            TracksSection(
-                sortedSongs,
-                currentSong = currentSong,
-                onSongClick = { index -> viewModel.playSong(sortedSongs, index) },
-                onAddToQueue = { song -> viewModel.addToQueue(song) },
-                onAddToPlaylist = { song -> showAddToPlaylistDialog = song },
-                onPropertiesClick = { song -> navController.navigate(Screen.SongProperties.createRoute(song.id)) },
-                onDelete = { song -> viewModel.deleteSong(song) }
-            )
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                TracksControlBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    onShuffleClick = { 
+                        if (sortedSongs.isNotEmpty()) {
+                            viewModel.playSong(sortedSongs.shuffled(), 0)
+                        }
+                    },
+                    sortOrder = sortOrder,
+                    onSortOrderChange = { sortOrder = it }
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        itemsIndexed(
+            items = sortedSongs,
+            key = { _, song -> song.id }
+        ) { index, song ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                SongCard(
+                    song, 
+                    onClick = { viewModel.playSong(sortedSongs, index) },
+                    onAddToQueue = { viewModel.addToQueue(song) },
+                    onAddToPlaylist = { showAddToPlaylistDialog = song },
+                    onPropertiesClick = { navController.navigate(Screen.SongProperties.createRoute(song.id)) },
+                    onDelete = { viewModel.deleteSong(song) },
+                    isPlaying = song.id == currentSong?.id
+                )
+            }
         }
     }
 }
@@ -249,31 +268,6 @@ fun TracksControlBar(
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun TracksSection(
-    songs: List<Song>,
-    currentSong: Song?,
-    onSongClick: (Int) -> Unit,
-    onAddToQueue: (Song) -> Unit,
-    onAddToPlaylist: (Song) -> Unit,
-    onPropertiesClick: (Song) -> Unit,
-    onDelete: (Song) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        songs.forEachIndexed { index, song ->
-            SongCard(
-                song, 
-                onClick = { onSongClick(index) },
-                onAddToQueue = { onAddToQueue(song) },
-                onAddToPlaylist = { onAddToPlaylist(song) },
-                onPropertiesClick = { onPropertiesClick(song) },
-                onDelete = { onDelete(song) },
-                isPlaying = song.id == currentSong?.id
-            )
         }
     }
 }

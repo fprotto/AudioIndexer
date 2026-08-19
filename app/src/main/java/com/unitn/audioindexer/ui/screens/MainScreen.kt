@@ -21,10 +21,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChangeCircle
-import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.InvertColors
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PlayArrow
@@ -90,7 +90,7 @@ fun MainScreen(
             (LocalContext.current.applicationContext as AudioIndexerApplication).settingsRepository
         )
     ),
-    content: @Composable () -> Unit
+    content: LazyListScope.() -> Unit
 ) {
     val context = LocalContext.current
     val systemInDarkTheme = isSystemInDarkTheme()
@@ -125,8 +125,7 @@ fun MainScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(padding)
         ) {
             stickyHeader {
                 QuickNavigateToSection(
@@ -134,11 +133,7 @@ fun MainScreen(
                     currentSection = state
                 )
             }
-            item {
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    content()
-                }
-            }
+            content()
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -144,21 +145,39 @@ fun AlbumsScreen(
 
     MainScreen(
         navController = navController,
-        state = "Albums"
+        state = "Albums",
+        modifier = modifier
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            AlbumsControlBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it }
-            )
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-            AlbumsSection(
-                filteredAlbums,
-                navController,
-                onAddToQueue = { viewModel.addAlbumToQueue(it) },
-                onAddToPlaylist = { showAddToPlaylistDialogForAlbum = it },
-                modifier = modifier
-            )
+        item {
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                AlbumsControlBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it }
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        items(
+            items = filteredAlbums.sortedBy { it.name.lowercase() },
+            key = { album -> album.id }
+        ) { album ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                AlbumItem(
+                    album,
+                    navController,
+                    modifier = modifier,
+                    onAddToQueue = { viewModel.addAlbumToQueue(album) },
+                    onAddToPlaylist = { showAddToPlaylistDialogForAlbum = album }
+                )
+            }
         }
     }
 }
@@ -204,27 +223,6 @@ fun AlbumsControlBar(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
         )
-    }
-}
-
-@Composable
-fun AlbumsSection(
-    albums: List<Album>,
-    navController: NavController,
-    onAddToQueue: (Album) -> Unit,
-    onAddToPlaylist: (Album) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        albums.sortedBy { album -> album.name.lowercase() }.forEach { album ->
-            AlbumItem(
-                album,
-                navController,
-                modifier = modifier,
-                onAddToQueue = { onAddToQueue(album) },
-                onAddToPlaylist = { onAddToPlaylist(album) }
-            )
-        }
     }
 }
 
