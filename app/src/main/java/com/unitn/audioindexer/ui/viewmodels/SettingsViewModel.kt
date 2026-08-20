@@ -28,7 +28,7 @@ class SettingsViewModel(
     val isDarkTheme: StateFlow<Boolean?> = settingsRepository.isDarkTheme
 
     val allSources: StateFlow<List<MusicSourceEntity>?> = repository.allSources
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val activeSourceId: StateFlow<Int?> = repository.activeSourceId
 

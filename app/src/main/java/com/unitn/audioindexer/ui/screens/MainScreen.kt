@@ -101,7 +101,7 @@ fun MainScreen(
     
     val allSources by settingsViewModel.allSources.collectAsState()
     LaunchedEffect(allSources) {
-        if (allSources != null && allSources!!.isEmpty()) {
+        if (allSources != null && allSources!!.isEmpty() && navController.currentDestination?.route != Screen.Setup.route) {
             navController.navigate(Screen.Setup.route) {
                 popUpTo(0) { inclusive = true }
             }
