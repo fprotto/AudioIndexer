@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -513,8 +514,26 @@ fun MiniPlayer(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(72.dp)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .pointerInput(Unit) {
+                    var offsetY = 0f
+                    detectVerticalDragGestures(
+                        onVerticalDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetY += dragAmount
+                        },
+                        onDragEnd = {
+                            if (offsetY < -50) { // Swipe up -> Open Player
+                                onClick()
+                            }
+                            offsetY = 0f
+                        },
+                        onDragCancel = {
+                            offsetY = 0f
+                        }
+                    )
+                }
                 .clickable(onClick = onClick),
             shape = MaterialTheme.shapes.medium
         ) {

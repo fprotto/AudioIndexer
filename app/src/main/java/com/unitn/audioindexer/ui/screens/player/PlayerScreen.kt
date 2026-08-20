@@ -2,6 +2,7 @@ package com.unitn.audioindexer.ui.screens.player
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -137,11 +138,31 @@ fun PlayerScreen(
                     onDragEnd = {
                         if (offsetY > 100) {
                             onBackClick()
+                        } else if (offsetY < -100) {
+                            onQueueClick()
                         }
                         offsetY = 0f
                     },
                     onDragCancel = {
                         offsetY = 0f
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                var offsetX = 0f
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount
+                    },
+                    onDragEnd = {
+                        if (offsetX < -100 || offsetX > 100) {
+                            onLyricsClick()
+                        }
+                        offsetX = 0f
+                    },
+                    onDragCancel = {
+                        offsetX = 0f
                     }
                 )
             },
