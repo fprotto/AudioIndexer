@@ -112,9 +112,9 @@ fun MainScreen(
     val routes = listOf("tracks", "artists", "albums", "playlists")
     val currentIndex = sections.indexOf(state)
 
-    val onSwipeLeft = {
-        if (currentIndex < routes.size - 1) {
-            navController.navigate(routes[currentIndex + 1]) {
+    val onSwipeRight = {
+        if (currentIndex > 0) {
+            navController.navigate(routes[currentIndex - 1]) {
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
@@ -124,9 +124,9 @@ fun MainScreen(
         }
     }
 
-    val onSwipeRight = {
-        if (currentIndex > 0) {
-            navController.navigate(routes[currentIndex - 1]) {
+    val onSwipeLeft = {
+        if (currentIndex < routes.size - 1) {
+            navController.navigate(routes[currentIndex + 1]) {
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
