@@ -3,10 +3,10 @@ package com.unitn.audioindexer.data.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import androidx.core.content.edit
 
 class SettingsRepository(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("audioindexer_prefs", Context.MODE_PRIVATE)

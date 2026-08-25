@@ -10,21 +10,21 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
-import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
-import com.unitn.audioindexer.ui.navigation.AppNavigation
-import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.unitn.audioindexer.ui.components.navigation.AppNavigation
 import com.unitn.audioindexer.ui.screens.Screen
+import com.unitn.audioindexer.ui.theme.AudioIndexerTheme
+import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
+import com.unitn.audioindexer.ui.viewmodels.SettingsViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 

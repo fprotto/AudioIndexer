@@ -51,6 +51,7 @@ class PlaybackService : MediaSessionService() {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra("OPEN_PLAYER", true)
         }
+
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

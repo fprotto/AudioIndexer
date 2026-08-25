@@ -2,6 +2,7 @@ package com.unitn.audioindexer.playback
 
 import android.content.ComponentName
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 import kotlin.time.Duration.Companion.milliseconds
 
 data class PlaybackState(
@@ -86,7 +86,7 @@ class MusicController(
                             try {
                                 val songId = mediaItem.mediaId.toInt()
                                 repository.incrementPlayCount(songId)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 // Ignore if mediaId is not an Int
                             }
                         }

@@ -1,13 +1,8 @@
 package com.unitn.audioindexer.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.unitn.audioindexer.data.repository.SettingsRepository
 import com.unitn.audioindexer.playback.MusicController
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class PlayerSettingsViewModel(
     private val settingsRepository: SettingsRepository,

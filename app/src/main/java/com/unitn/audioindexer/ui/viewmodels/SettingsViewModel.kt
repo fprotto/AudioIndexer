@@ -1,5 +1,6 @@
 package com.unitn.audioindexer.ui.viewmodels
 
+import android.annotation.SuppressLint
 import android.app.LocaleConfig
 import android.app.LocaleManager
 import android.content.Context
@@ -115,6 +116,7 @@ class SettingsViewModel(
         }
     }
 
+    @SuppressLint("DiscouragedApi")
     fun getSupportedLanguages(context: Context): List<Pair<String, String>> {
         val locales = mutableListOf<Locale>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -126,7 +128,7 @@ class SettingsViewModel(
                         localeList.get(i)?.let { locales.add(it) }
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // LocaleConfig might not be found if not generated yet
             }
         }
@@ -155,7 +157,7 @@ class SettingsViewModel(
                         eventType = xpp.next()
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // If it fails, we'll just have the default locale
             }
         }

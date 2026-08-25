@@ -1,9 +1,9 @@
 package com.unitn.audioindexer.ui.viewmodels
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import android.net.Uri
 import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.Artist
 import com.unitn.audioindexer.data.components.Playlist

@@ -3,6 +3,7 @@ package com.unitn.audioindexer.data.sync
 import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -29,7 +30,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import androidx.core.net.toUri
 
 class MusicSyncWorker(
     context: Context,
@@ -73,6 +73,7 @@ class MusicSyncWorker(
                 }
                 else -> return Result.failure()
             }
+
             Result.success()
         } catch (e: Exception) {
             Log.e("MusicSyncWorker", "Error syncing source", e)
@@ -349,6 +350,7 @@ class MusicSyncWorker(
                 normalized = normalized.substring(0, index)
             }
         }
+
         return normalized.trim()
     }
 }

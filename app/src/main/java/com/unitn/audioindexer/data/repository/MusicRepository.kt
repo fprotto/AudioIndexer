@@ -1,16 +1,22 @@
 package com.unitn.audioindexer.data.repository
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.unitn.audioindexer.data.components.Album
 import com.unitn.audioindexer.data.components.Artist
+import com.unitn.audioindexer.data.components.ExportConfig
 import com.unitn.audioindexer.data.components.IconSource
 import com.unitn.audioindexer.data.components.Playlist
-import com.unitn.audioindexer.data.components.Song
-import com.unitn.audioindexer.data.components.ExportConfig
 import com.unitn.audioindexer.data.components.PlaylistConfig
+import com.unitn.audioindexer.data.components.Song
 import com.unitn.audioindexer.data.components.SongConfig
 import com.unitn.audioindexer.data.components.SourceConfig
-import com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef
-import kotlinx.coroutines.flow.first
 import com.unitn.audioindexer.data.database.dao.ArtistDao
 import com.unitn.audioindexer.data.database.dao.MusicSourceDao
 import com.unitn.audioindexer.data.database.dao.PlaylistDao
@@ -18,38 +24,32 @@ import com.unitn.audioindexer.data.database.dao.SongDao
 import com.unitn.audioindexer.data.database.entities.ArtistEntity
 import com.unitn.audioindexer.data.database.entities.MusicSourceEntity
 import com.unitn.audioindexer.data.database.entities.PlaylistEntity
+import com.unitn.audioindexer.data.database.entities.PlaylistSongCrossRef
 import com.unitn.audioindexer.data.database.entities.SongEntity
 import com.unitn.audioindexer.data.database.relations.PlaylistWithSongs
 import com.unitn.audioindexer.data.database.relations.SongWithArtist
+import com.unitn.audioindexer.data.network.AudioDbApi
+import com.unitn.audioindexer.data.network.LyricsOvhApi
 import com.unitn.audioindexer.data.sync.MusicSyncWorker
-import androidx.work.Constraints
-import androidx.work.Data
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import android.content.Context
-import android.net.Uri
-import android.util.Log
-import java.io.File
-import java.security.MessageDigest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import com.unitn.audioindexer.data.network.AudioDbApi
-import com.unitn.audioindexer.data.network.LyricsOvhApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import java.io.File
 import java.net.URL
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import java.security.MessageDigest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MusicRepository(
@@ -112,7 +112,12 @@ class MusicRepository(
 
     suspend fun getSourceCount(): Int = musicSourceDao.getSourceCount()
 
-    suspend fun addSource(type: String, path: String, port: Int? = null, name: String): Int {
+    suspend fun addSource(
+        type: String,
+        path: String,
+        port: Int? = null,
+        name: String
+    ): Int {
         val id = musicSourceDao.upsertSource(MusicSourceEntity(type = type, path = path, port = port, name = name))
         if (_activeSourceId.value == null) {
             _activeSourceId.value = id.toInt()
@@ -146,7 +151,11 @@ class MusicRepository(
 
     suspend fun getAlbumById(id: Int): Album? = playlistDao.getPlaylistById(id)?.toAlbumDomain()
 
-    suspend fun insertArtist(name: String, propicName: String, mbid: String? = null): Long {
+    suspend fun insertArtist(
+        name: String,
+        propicName: String,
+        mbid: String? = null
+    ): Long {
         val sourceId = activeSourceId.value ?: return -1
         return artistDao.insertArtist(ArtistEntity(sourceId = sourceId, name = name, mbid = mbid, propicType = "vector", propicValue = propicName))
     }
@@ -206,7 +215,11 @@ class MusicRepository(
         playlistDao.removeSongFromAllPlaylists(songId)
     }
 
-    suspend fun fetchAndCacheLyrics(songId: Int, artist: String, title: String) = withContext(Dispatchers.IO) {
+    suspend fun fetchAndCacheLyrics(
+        songId: Int,
+        artist: String,
+        title: String
+    ) = withContext(Dispatchers.IO) {
         val songRelation = songDao.getSongById(songId) ?: return@withContext
         val song = songRelation.song
         
@@ -288,7 +301,11 @@ class MusicRepository(
         )
     }
 
-    suspend fun addSongToPlaylist(playlistId: Long, songId: Long, order: Int? = null) {
+    suspend fun addSongToPlaylist(
+        playlistId: Long,
+        songId: Long,
+        order: Int? = null
+    ) {
         val finalOrder = order ?: ((playlistDao.getMaxOrderForPlaylist(playlistId.toInt()) ?: -1) + 1)
         playlistDao.insertPlaylistSongCrossRef(
             PlaylistSongCrossRef(
@@ -427,6 +444,7 @@ class MusicRepository(
             "uri" -> IconSource.UriIcon(propicValue)
             else -> IconSource.VectorIcon("PersonOutline")
         }
+
         return Artist(id, name, iconSource)
     }
 
@@ -436,6 +454,7 @@ class MusicRepository(
             "uri" -> IconSource.UriIcon(song.coverValue)
             else -> IconSource.VectorIcon("MusicNote")
         }
+
         return Song(
             id = song.id,
             title = song.title,
@@ -476,6 +495,7 @@ class MusicRepository(
             "uri" -> IconSource.UriIcon(playlist.coverValue)
             else -> IconSource.VectorIcon("Album")
         }
+
         val artist = albumArtist?.toDomain() ?: Artist(0, "Unknown", IconSource.VectorIcon("PersonOutline"))
         
         val orderMap = crossRefs.associateBy({ it.songId }, { it.order })

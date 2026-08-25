@@ -1,4 +1,4 @@
-package com.unitn.audioindexer.ui.songs
+package com.unitn.audioindexer.ui.components.songs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
