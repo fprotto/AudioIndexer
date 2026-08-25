@@ -17,6 +17,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +46,7 @@ import com.unitn.audioindexer.AudioIndexerApplication
 import com.unitn.audioindexer.R
 import com.unitn.audioindexer.ui.viewmodels.MusicViewModelFactory
 import com.unitn.audioindexer.ui.viewmodels.PlayerSettingsViewModel
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -223,6 +225,24 @@ fun PlayerSettingsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.width(48.dp)
                     )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(0.5f, 1f, 1.25f, 1.5f, 2f).forEach { speed ->
+                        FilterChip(
+                            selected = abs(playbackSpeed - speed) < 0.01f,
+                            onClick = { viewModel.setPlaybackSpeed(speed) },
+                            label = {
+                                Text(
+                                    text = if (speed == speed.toInt().toFloat()) "${speed.toInt()}x" else "${speed}x",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
