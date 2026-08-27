@@ -159,6 +159,16 @@ fun PlaylistHeader(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                // Total duration row
+                val totalDurationMs = playlist.songs.sumOf { it.duration }
+                val minutes = totalDurationMs / (1000 * 60)
+                val seconds = (totalDurationMs / 1000) % 60
+                Text(
+                    text = "%d:%02d".format(minutes, seconds),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             // Action buttons row
